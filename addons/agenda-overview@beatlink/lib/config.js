@@ -247,6 +247,12 @@ function reshapeGrouping(grouping, vocabularies = {}) {
     return { name: grouping.name, type: "dayjs", intervals: grouping.intervals || {}, noValue }
 }
 
+// Named by its levels as a breadcrumb, dropping levels whose grouping no longer exists.
+function reshapeFolderPath(path, groupings) {
+    const levels = (path.levels || []).map(level => level.grouping).filter(id => groupings[id])
+    return { name: levels.map(id => groupings[id].name).join(" → ") || path.name, levels }
+}
+
 function buildDayjsRule(dateRule) {
     const { operator, moment1, moment2, bracket } = dateRule
     if (operator === "isNull") return ["isNull"]
@@ -322,7 +328,8 @@ function reshapeProfile(profile, searchGroups, filterGroups, profileId) {
         sorts: { selected: profile.sortSelected },
         prefixes: { selected: profile.prefixSelected },
         colors: { selected: profile.colorSelected },
-        groupings: { selected: profile.groupingSelected }
+        groupings: { selected: profile.groupingSelected },
+        folderPaths: { selected: profile.folderPathSelected }
     }
 }
 
@@ -333,7 +340,8 @@ function unshapeProfile(profile) {
         sortSelected: profile.sorts?.selected,
         prefixSelected: profile.prefixes?.selected,
         colorSelected: profile.colors?.selected,
-        groupingSelected: profile.groupings?.selected
+        groupingSelected: profile.groupings?.selected,
+        folderPathSelected: profile.folderPaths?.selected
     }
 }
 
@@ -384,6 +392,7 @@ async function loadData(schemaNoteId, configNoteId) {
         colors: mapEntries(colors, variant =>
             reshapeVariant(variant, vocabularies, value => value.color)),
         groupings: mapEntries(groupings, grouping => reshapeGrouping(grouping, vocabularies)),
+        folderPaths: mapEntries(values.folderPaths, path => reshapeFolderPath(path, groupings)),
         profiles: mapEntries(values.profiles, (profile, id) =>
             reshapeProfile(profile, searchGroups, filterGroups, id))
     }

@@ -312,6 +312,7 @@
             }
         }
     },
+    "folderPaths": {},
     "dateRules": {
         "noDate": {
             "name": "No Date",

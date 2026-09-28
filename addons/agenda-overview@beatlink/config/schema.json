@@ -118,6 +118,12 @@
                 "registry": "groupings",
                 "default": ""
             },
+            "folderPathSelected": {
+                "type": "reference",
+                "label": "Folder Path",
+                "registry": "folderPaths",
+                "default": ""
+            },
             "searchGroups": {
                 "type": "checklist",
                 "label": "Searches",
@@ -672,6 +678,33 @@
             }
         },
         "description": "An entry is generated automatically for each installed picker (area-picker@beatlink, priority-widget@beatlink, template-picker@beatlink) and cannot be edited here - change the vocabulary in that addon's own settings."
+    },
+    "folderPaths": {
+        "type": "registry",
+        "label": "Folder Paths",
+        "category": "Review",
+        "tab": "Folders",
+        "itemSchema": {
+            "name": {
+                "type": "string",
+                "label": "Name",
+                "default": "New Folder Path"
+            },
+            "levels": {
+                "type": "list",
+                "label": "Levels",
+                "default": [],
+                "itemSchema": {
+                    "grouping": {
+                        "type": "reference",
+                        "label": "Grouping",
+                        "registry": "groupings",
+                        "default": ""
+                    }
+                }
+            }
+        },
+        "description": "Files the overview's tasks into generated folders, one level of nesting per grouping, in order. A task no group matches goes into that level's no-value folder, or Other."
     },
     "dateRules": {
         "type": "registry",

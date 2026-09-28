@@ -26,8 +26,23 @@ On every note, and on each `agenda:tasksChanged` event (broadcast by
 - regenerates the iCal feed note it ships (`#customResourceProvider agendaCalendar.ical`, served at
   `custom/agendaCalendar.ical`) from the same list, finding it by that label.
 
-The widget itself offers the profile picker, the collection-view picker, and a link through to the
-Agenda Settings page.
+The widget itself offers the profile picker, the collection-view picker, the folder path picker, and a
+link through to the Agenda Settings page.
+
+### Folders
+
+A profile can file its tasks into generated folders instead of directly under the overview note. Each
+entry on the settings page's **Folders** tab is an ordered list of groupings, one per level of nesting:
+*By Area* then *By Priority* gives a folder per area, each holding a folder per priority. The widget's
+**Folders** dropdown lists these entries as breadcrumbs (`By Area → By Priority`), plus **None**.
+
+- A folder exists only while it holds tasks, and folders follow the grouping's own order and colour.
+- A task no group matches goes into that level's catch-all folder, named by the grouping's no-value
+  display, or **Other** when it has none.
+- Every folder is a collection note using the profile's collection view, so a board inside a folder
+  gets the same columns as the overview would.
+- Generated folders carry `#agendaOverviewFolder` and are rebuilt on every refresh, so anything you
+  file into one by hand is removed again.
 
 ## Configuration
 

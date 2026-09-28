@@ -10,19 +10,60 @@ const {
     getMatchingProfile, getSectionState, saveSectionState,
     getNotesForSearchGroups, getFilteredNotes, sortNoteIds,
     getPrefixes, getColors, getGroups, getGroupColumns, setGroupForNote,
-    getTaskList, getSortedTaskList
+    getTaskList, getSortedTaskList, NO_VALUE_KEY
 } = query
 
-// Materializes the sorted task list as children of the overview note: attaches
-// each note, stamps a sort key, applies per-note colors, sets branch prefixes,
-// and detaches notes no longer in the list.
+// Files the sorted task list under the overview note, or under a generated folder tree, and returns every folder id.
 // The backend call is awaited by callers: updateTaskLists refreshes the
 // frontend note cache afterwards, which would race a fire-and-forget write.
-function loadNotes(parentNoteId, notesList, prefixDict, colorDict) {
-    return api.runOnBackend((parentNoteId, notesList, prefixDict, colorDict) => {
+function loadNotes(parentNoteId, notesList, folders, prefixDict, colorDict) {
+    return api.runOnBackend((parentNoteId, notesList, folders, prefixDict, colorDict) => {
+        const isFolder = note => note.hasLabel("agendaOverviewFolder")
+        const targetOf = Object.fromEntries(notesList.map(noteId => [noteId, parentNoteId]))
+        const folderIds = []
+        const staleFolderIds = []
+
+        function collectStale(folderNote) {
+            staleFolderIds.push(folderNote.noteId)
+            for (const child of folderNote.getChildNotes()) if (isFolder(child)) collectStale(child)
+        }
+
+        // Folders are matched by group key within their parent, so a task changing a lower level moves only inside its upper folder.
+        function syncFolders(containerId, folders) {
+            const existing = Object.fromEntries(api.getNote(containerId).getChildNotes()
+                .filter(isFolder)
+                .map(note => [note.getLabelValue("agendaOverviewFolder"), note]))
+            const sortKeyWidth = String(folders.length).length
+            for (const [index, folder] of folders.entries()) {
+                let folderNote = existing[folder.key]
+                delete existing[folder.key]
+                if (!folderNote) {
+                    folderNote = api.createNewNote({ parentNoteId: containerId, title: folder.title, content: "", type: "book" }).note
+                    folderNote.setLabel("agendaOverviewFolder", folder.key)
+                }
+                if (folderNote.title !== folder.title) {
+                    folderNote.title = folder.title
+                    folderNote.save()
+                }
+                if (folder.color) {
+                    if (folderNote.getLabelValue("color") !== folder.color) folderNote.setLabel("color", folder.color)
+                } else if (folderNote.hasLabel("color")) {
+                    folderNote.removeLabel("color")
+                }
+                folderNote.setLabel("agendaOverviewSort", String(index).padStart(sortKeyWidth, '0'))
+                folderIds.push(folderNote.noteId)
+                syncFolders(folderNote.noteId, folder.children)
+                if (!folder.children.length) {
+                    for (const noteId of folder.noteIds) targetOf[noteId] = folderNote.noteId
+                }
+            }
+            Object.values(existing).forEach(collectStale)
+        }
+        syncFolders(parentNoteId, folders)
+
         const sortKeyWidth = String(notesList.length).length
         for (const [index, noteId] of notesList.entries()) {
-            api.toggleNoteInParent(true, noteId, parentNoteId, "")
+            api.toggleNoteInParent(true, noteId, targetOf[noteId], "")
             const note = api.getNote(noteId)
             note.setLabel("agendaOverviewSort", String(index).padStart(sortKeyWidth, '0'))
 
@@ -37,22 +78,27 @@ function loadNotes(parentNoteId, notesList, prefixDict, colorDict) {
             }
         }
 
-        api.sortNotes(parentNoteId, { sortBy: "agendaOverviewSort" })
-
-        for (const note of api.getNote(parentNoteId).getChildNotes()) {
-            if (!notesList.includes(note.noteId)) {
-                note.removeLabel("agendaOverviewSort")
-                api.toggleNoteInParent(false, note.noteId, parentNoteId, "")
+        for (const managedId of [parentNoteId, ...folderIds, ...staleFolderIds]) {
+            for (const note of api.getNote(managedId).getChildNotes()) {
+                if (isFolder(note) || targetOf[note.noteId] === managedId) continue
+                if (!(note.noteId in targetOf)) note.removeLabel("agendaOverviewSort")
+                api.toggleNoteInParent(false, note.noteId, managedId, "")
             }
         }
+        // Deepest first, so each stale folder is empty when it goes.
+        for (const staleFolderId of staleFolderIds.reverse()) api.getNote(staleFolderId).deleteNote()
 
-        for (const branch of api.getNote(parentNoteId).getChildBranches()) {
-            if (branch.noteId in prefixDict) {
-                branch.prefix = prefixDict[branch.noteId]
-                branch.save()
+        for (const managedId of [parentNoteId, ...folderIds]) {
+            api.sortNotes(managedId, { sortBy: "agendaOverviewSort" })
+            for (const branch of api.getNote(managedId).getChildBranches()) {
+                if (branch.noteId in prefixDict) {
+                    branch.prefix = prefixDict[branch.noteId]
+                    branch.save()
+                }
             }
         }
-    }, [parentNoteId, notesList, prefixDict, colorDict])
+        return folderIds
+    }, [parentNoteId, notesList, folders, prefixDict, colorDict])
 }
 
 // Configures the overview note's view (list/board), promoted attributes, board
@@ -161,6 +207,30 @@ async function computeStatuses(dateRules, groupingInfo, noteIds) {
     return { statusByNote, columns: columns.map(column => column.display) }
 }
 
+// Buckets the sorted notes into one folder per non-empty group, in column order, nesting each further level inside it.
+async function computeFolders(dateRules, groupingInfos, noteIds) {
+    const [groupingInfo, ...lowerLevels] = groupingInfos
+    if (!groupingInfo) return []
+    const groups = await getGroups(dateRules, groupingInfo, noteIds)
+    const columns = getGroupColumns(groupingInfo)
+    if (!columns.some(column => column.key === NO_VALUE_KEY)) {
+        columns.push({ key: NO_VALUE_KEY, display: "Other", color: null })
+    }
+    const folders = []
+    for (const column of columns) {
+        const folderNoteIds = noteIds.filter(noteId => (groups[noteId] ?? NO_VALUE_KEY) === column.key)
+        if (!folderNoteIds.length) continue
+        folders.push({
+            key: column.key,
+            title: column.display,
+            color: column.color || "",
+            noteIds: folderNoteIds,
+            children: await computeFolders(dateRules, lowerLevels, folderNoteIds)
+        })
+    }
+    return folders
+}
+
 async function updateTaskLists(profileContext, constants) {
     const data = await loadData(profileContext.schemaNoteId, profileContext.configNoteId)
     const profile = await getActiveProfile(profileContext)
@@ -188,14 +258,19 @@ async function updateTaskLists(profileContext, constants) {
 
         const prefixDict = await getPrefixes(data.dateRules, data.prefixes[profile.prefixes.selected], sortedNotes)
         const colorDict = await getColors(data.dateRules, data.colors[profile.colors.selected], sortedNotes)
-        await loadNotes(overviewNoteId, sortedNotes, prefixDict, colorDict)
+        const folderLevels = (data.folderPaths[profile.folderPaths.selected]?.levels || []).map(id => data.groupings[id])
+        const folders = await computeFolders(data.dateRules, folderLevels, sortedNotes)
+        const folderNoteIds = await loadNotes(overviewNoteId, sortedNotes, folders, prefixDict, colorDict)
+        for (const folderNoteId of folderNoteIds) {
+            await configureOverviewNote(folderNoteId, viewType, boardGroupBy, {}, boardColumns, promotedAttributes)
+        }
 
         // All the mutation above happens on the backend, so the frontend note
         // cache still holds the pre-change tree and the view renders stale.
         // Wait for the backend -> frontend sync, then refresh the overview note
         // and every task whose labels/branches we just rewrote.
         await api.waitUntilSynced()
-        await api.reloadNotes([overviewNoteId, ...sortedNotes])
+        await api.reloadNotes([overviewNoteId, ...folderNoteIds, ...sortedNotes])
     }
 
     await setCalendarEvents(profileContext, constants)

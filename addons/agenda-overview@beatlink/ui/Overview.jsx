@@ -80,7 +80,8 @@ function DropdownSection({
     profile,
     update,
     expanded,
-    setExpanded
+    setExpanded,
+    noneTitle
 }) {
     const section = sectionPath.reduce((o,k)=>o[k], profile)
 
@@ -92,12 +93,13 @@ function DropdownSection({
             className="mainSection"
         >
             <FormDropdownList
-                values={Object.entries(registry[registryKey])
-                    .map(([key, value]) => ({
-                        key,
-                        title: value.name
-                    }))
-                }
+                values={(noneTitle ? [{ key: "", title: noneTitle }] : []).concat(
+                    Object.entries(registry[registryKey])
+                        .map(([key, value]) => ({
+                            key,
+                            title: value.name
+                        }))
+                )}
                 currentValue={section.selected}
                 onChange={value =>
                     update(p =>
@@ -235,6 +237,18 @@ function AgendaOverviewWidgetJSX() {
                         setExpanded={toggleSection("groupings")}
                     />
                 )}
+
+                <DropdownSection
+                    title="Folders"
+                    sectionPath={["folderPaths"]}
+                    registryKey="folderPaths"
+                    registry={registry}
+                    profile={profile}
+                    update={update}
+                    expanded={sectionState.folderPaths !== false}
+                    setExpanded={toggleSection("folderPaths")}
+                    noneTitle="None"
+                />
 
                 <CheckboxSection
                     title="Searches"
