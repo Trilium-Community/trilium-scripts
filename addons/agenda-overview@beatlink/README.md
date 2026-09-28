@@ -35,7 +35,9 @@ A profile can file its tasks into generated folders instead of directly under th
 entry on the settings page's **Folders** tab is an ordered list of groupings, one per level of nesting:
 *By Area* then *By Priority* gives a folder per area, each holding a folder per priority.
 A level's **Group By** is either an entry from the Groupings tab or one of the installed pickers
-(By Area, By Priority, By Template); a level whose picker is uninstalled drops out. The widget's
+(By Area, By Priority, By Template); a level whose picker is uninstalled drops out.
+Tick a level's **Always Expanded** to keep its folders open in the note tree. That works through
+[`expanded@beatlink`](../expanded@beatlink/README.md)'s label, so it needs that addon installed. The widget's
 **Folders** dropdown lists these entries as breadcrumbs (`By Area → By Priority`), plus **None**.
 
 - A folder exists only while it holds tasks, and folders follow the grouping's own order and colour.

@@ -727,6 +727,12 @@
                         "showWhen": {
                             "source": "grouping"
                         }
+                    },
+                    "alwaysExpanded": {
+                        "type": "boolean",
+                        "label": "Always Expanded",
+                        "description": "Keeps this level's folders open in the note tree, through expanded@beatlink's label. Has no effect without that addon installed.",
+                        "default": false
                     }
                 }
             }

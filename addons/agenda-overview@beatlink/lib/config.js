@@ -250,9 +250,12 @@ function reshapeGrouping(grouping, vocabularies = {}) {
 // Named by its levels as a breadcrumb, dropping levels whose grouping or picker no longer exists.
 function reshapeFolderPath(path, groupings) {
     const levels = (path.levels || [])
-        .map(level => level.source && level.source !== "grouping" ? derivedId(level.source) : level.grouping)
-        .filter(id => groupings[id])
-    return { name: levels.map(id => groupings[id].name).join(" → ") || path.name, levels }
+        .map(level => ({
+            grouping: level.source && level.source !== "grouping" ? derivedId(level.source) : level.grouping,
+            alwaysExpanded: !!level.alwaysExpanded
+        }))
+        .filter(level => groupings[level.grouping])
+    return { name: levels.map(level => groupings[level.grouping].name).join(" → ") || path.name, levels }
 }
 
 function buildDayjsRule(dateRule) {
@@ -396,8 +399,18 @@ async function loadData(schemaNoteId, configNoteId) {
         groupings: mapEntries(groupings, grouping => reshapeGrouping(grouping, vocabularies)),
         folderPaths: mapEntries(values.folderPaths, path => reshapeFolderPath(path, groupings)),
         profiles: mapEntries(values.profiles, (profile, id) =>
-            reshapeProfile(profile, searchGroups, filterGroups, id))
+            reshapeProfile(profile, searchGroups, filterGroups, id)),
+        expandLabel: await getExpandLabel()
     }
+}
+
+// The label expanded@beatlink keeps open in the tree, or null when that addon isn't installed.
+async function getExpandLabel() {
+    const [anchor] = await api.searchForNotes("#expandedConfig")
+    const schemaNoteId = anchor?.getRelationValue("schemaNote")
+    const configNoteId = anchor?.getRelationValue("configNote")
+    if (!schemaNoteId || !configNoteId) return null
+    return (await loadSettings(schemaNoteId, configNoteId)).labelName || null
 }
 
 async function saveProfile(profile) {

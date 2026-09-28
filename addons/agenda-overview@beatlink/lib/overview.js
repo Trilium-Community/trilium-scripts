@@ -16,8 +16,8 @@ const {
 // Files the sorted task list under the overview note, or under a generated folder tree, and returns every folder id.
 // The backend call is awaited by callers: updateTaskLists refreshes the
 // frontend note cache afterwards, which would race a fire-and-forget write.
-function loadNotes(parentNoteId, notesList, folders, prefixDict, colorDict) {
-    return api.runOnBackend((parentNoteId, notesList, folders, prefixDict, colorDict) => {
+function loadNotes(parentNoteId, notesList, folders, prefixDict, colorDict, expandLabel) {
+    return api.runOnBackend((parentNoteId, notesList, folders, prefixDict, colorDict, expandLabel) => {
         const isFolder = note => note.hasLabel("agendaOverviewFolder")
         const targetOf = Object.fromEntries(notesList.map(noteId => [noteId, parentNoteId]))
         const folderIds = []
@@ -51,6 +51,12 @@ function loadNotes(parentNoteId, notesList, folders, prefixDict, colorDict) {
                     folderNote.removeLabel("color")
                 }
                 folderNote.setLabel("agendaOverviewSort", String(index).padStart(sortKeyWidth, '0'))
+                // Unflagging writes "false" rather than deleting, which is how expanded@beatlink reads an unticked box.
+                const expanded = String(folder.alwaysExpanded)
+                if (expandLabel && folderNote.getLabelValue(expandLabel) !== expanded
+                    && (folder.alwaysExpanded || folderNote.hasLabel(expandLabel))) {
+                    folderNote.setLabel(expandLabel, expanded)
+                }
                 folderIds.push(folderNote.noteId)
                 syncFolders(folderNote.noteId, folder.children)
                 if (!folder.children.length) {
@@ -98,7 +104,7 @@ function loadNotes(parentNoteId, notesList, folders, prefixDict, colorDict) {
             }
         }
         return folderIds
-    }, [parentNoteId, notesList, folders, prefixDict, colorDict])
+    }, [parentNoteId, notesList, folders, prefixDict, colorDict, expandLabel])
 }
 
 // Configures the overview note's view (list/board), promoted attributes, board
@@ -208,9 +214,10 @@ async function computeStatuses(dateRules, groupingInfo, noteIds) {
 }
 
 // Buckets the sorted notes into one folder per non-empty group, in column order, nesting each further level inside it.
-async function computeFolders(dateRules, groupingInfos, noteIds) {
-    const [groupingInfo, ...lowerLevels] = groupingInfos
-    if (!groupingInfo) return []
+async function computeFolders(dateRules, levels, noteIds) {
+    const [level, ...lowerLevels] = levels
+    if (!level) return []
+    const { groupingInfo, alwaysExpanded } = level
     const groups = await getGroups(dateRules, groupingInfo, noteIds)
     const columns = getGroupColumns(groupingInfo)
     if (!columns.some(column => column.key === NO_VALUE_KEY)) {
@@ -224,6 +231,7 @@ async function computeFolders(dateRules, groupingInfos, noteIds) {
             key: column.key,
             title: column.display,
             color: column.color || "",
+            alwaysExpanded,
             noteIds: folderNoteIds,
             children: await computeFolders(dateRules, lowerLevels, folderNoteIds)
         })
@@ -258,9 +266,10 @@ async function updateTaskLists(profileContext, constants) {
 
         const prefixDict = await getPrefixes(data.dateRules, data.prefixes[profile.prefixes.selected], sortedNotes)
         const colorDict = await getColors(data.dateRules, data.colors[profile.colors.selected], sortedNotes)
-        const folderLevels = (data.folderPaths[profile.folderPaths.selected]?.levels || []).map(id => data.groupings[id])
+        const folderLevels = (data.folderPaths[profile.folderPaths.selected]?.levels || [])
+            .map(level => ({ groupingInfo: data.groupings[level.grouping], alwaysExpanded: level.alwaysExpanded }))
         const folders = await computeFolders(data.dateRules, folderLevels, sortedNotes)
-        const folderNoteIds = await loadNotes(overviewNoteId, sortedNotes, folders, prefixDict, colorDict)
+        const folderNoteIds = await loadNotes(overviewNoteId, sortedNotes, folders, prefixDict, colorDict, data.expandLabel)
         for (const folderNoteId of folderNoteIds) {
             await configureOverviewNote(folderNoteId, viewType, boardGroupBy, {}, boardColumns, promotedAttributes)
         }
