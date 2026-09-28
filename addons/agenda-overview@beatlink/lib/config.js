@@ -247,9 +247,11 @@ function reshapeGrouping(grouping, vocabularies = {}) {
     return { name: grouping.name, type: "dayjs", intervals: grouping.intervals || {}, noValue }
 }
 
-// Named by its levels as a breadcrumb, dropping levels whose grouping no longer exists.
+// Named by its levels as a breadcrumb, dropping levels whose grouping or picker no longer exists.
 function reshapeFolderPath(path, groupings) {
-    const levels = (path.levels || []).map(level => level.grouping).filter(id => groupings[id])
+    const levels = (path.levels || [])
+        .map(level => level.source && level.source !== "grouping" ? derivedId(level.source) : level.grouping)
+        .filter(id => groupings[id])
     return { name: levels.map(id => groupings[id].name).join(" → ") || path.name, levels }
 }
 

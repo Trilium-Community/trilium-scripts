@@ -695,11 +695,38 @@
                 "label": "Levels",
                 "default": [],
                 "itemSchema": {
+                    "source": {
+                        "type": "select",
+                        "label": "Group By",
+                        "description": "Grouping uses an entry from the Groupings tab. The picker options group by that addon's own values - a level sourced from an addon that isn't installed is skipped.",
+                        "default": "grouping",
+                        "options": [
+                            {
+                                "value": "grouping",
+                                "label": "Grouping"
+                            },
+                            {
+                                "value": "area",
+                                "label": "By Area"
+                            },
+                            {
+                                "value": "priority",
+                                "label": "By Priority"
+                            },
+                            {
+                                "value": "template",
+                                "label": "By Template"
+                            }
+                        ]
+                    },
                     "grouping": {
                         "type": "reference",
                         "label": "Grouping",
                         "registry": "groupings",
-                        "default": ""
+                        "default": "",
+                        "showWhen": {
+                            "source": "grouping"
+                        }
                     }
                 }
             }
