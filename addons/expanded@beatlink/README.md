@@ -23,6 +23,8 @@ The two backend scripts read the values through `expandedConfig.js`, and setupRo
 - **Label Name** — the label marking a note as always expanded (default `alwaysExpanded`)
 - **Promoted Definition** — the definition written to root for that label (default `promoted,alias=Always Expanded,single,boolean`)
 
+The settings note carries `#expandedConfig`, so other addons can find it and flag their own notes with the configured label: agenda-overview@beatlink uses it for its **Always Expanded** folder levels.
+
 Renaming the label takes effect on the next reload, when setupRoot.js removes the definition it wrote for the old name and writes the new one. Notes flagged under the old name keep the old label; re-tick them under the new checkbox.
 
 ## Installation
