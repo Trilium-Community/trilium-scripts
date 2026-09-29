@@ -737,7 +737,7 @@
                 }
             }
         },
-        "description": "Files the overview's tasks into generated folders, one level of nesting per grouping, in order. A task no group matches goes into that level's no-value folder, or Other."
+        "description": "Files the overview's tasks into generated folders, one level of nesting per grouping, in order. A task no group matches goes into that level's no-value folder, or Other. Every ordering of up to three of Interval, Recurrence and the installed pickers is also generated automatically; those appear only in the Agenda widget's Folders dropdown and cannot be edited here."
     },
     "dateRules": {
         "type": "registry",

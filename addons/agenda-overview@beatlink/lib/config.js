@@ -247,6 +247,27 @@ function reshapeGrouping(grouping, vocabularies = {}) {
     return { name: grouping.name, type: "dayjs", intervals: grouping.intervals || {}, noValue }
 }
 
+const FOLDER_DIMENSIONS = ["interval", "recurrence", ...Object.keys(PICKER_SOURCES)]
+
+// Every ordering of up to three available dimensions, shortest first, with the top level expanded.
+function derivedFolderPaths(vocabularies, groupings) {
+    const available = FOLDER_DIMENSIONS.filter(id => PICKER_SOURCES[id] ? vocabularies[id] : groupings[id])
+    const paths = []
+    const extend = (path) => {
+        if (path.length) paths.push(path)
+        if (path.length < 3) for (const id of available) if (!path.includes(id)) extend([...path, id])
+    }
+    extend([])
+    paths.sort((a, b) => a.length - b.length)
+    return Object.fromEntries(paths.map(path => [`${DERIVED_PREFIX}folders-${path.join("-")}`, {
+        name: "",
+        levels: path.map((id, index) => ({
+            ...(PICKER_SOURCES[id] ? { source: id } : { source: "grouping", grouping: id }),
+            alwaysExpanded: index === 0
+        }))
+    }]))
+}
+
 // Named by its levels as a breadcrumb, dropping levels whose grouping or picker no longer exists.
 function reshapeFolderPath(path, groupings) {
     const levels = (path.levels || [])
@@ -397,7 +418,8 @@ async function loadData(schemaNoteId, configNoteId) {
         colors: mapEntries(colors, variant =>
             reshapeVariant(variant, vocabularies, value => value.color)),
         groupings: mapEntries(groupings, grouping => reshapeGrouping(grouping, vocabularies)),
-        folderPaths: mapEntries(values.folderPaths, path => reshapeFolderPath(path, groupings)),
+        folderPaths: mapEntries({ ...(values.folderPaths || {}), ...derivedFolderPaths(vocabularies, groupings) },
+            path => reshapeFolderPath(path, groupings)),
         profiles: mapEntries(values.profiles, (profile, id) =>
             reshapeProfile(profile, searchGroups, filterGroups, id)),
         expandLabel: await getExpandLabel()

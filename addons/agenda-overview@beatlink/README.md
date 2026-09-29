@@ -36,6 +36,11 @@ entry on the settings page's **Folders** tab is an ordered list of groupings, on
 *By Area* then *By Priority* gives a folder per area, each holding a folder per priority.
 A level's **Group By** is either an entry from the Groupings tab or one of the installed pickers
 (By Area, By Priority, By Template); a level whose picker is uninstalled drops out.
+Alongside your own entries, the dropdown offers every ordering of up to three of By Interval, By
+Recurrence and each installed picker: 85 entries with all three pickers installed. Only the top level
+of each is Always Expanded. They are generated on every read like the picker entries above, so they
+never show on the settings page, and one that needs a missing picker or grouping is not offered at all.
+
 Tick a level's **Always Expanded** to keep its folders open in the note tree. That works through
 [`expanded@beatlink`](../expanded@beatlink/README.md)'s label, so it needs that addon installed. The widget's
 **Folders** dropdown lists these entries as breadcrumbs (`By Area → By Priority`), plus **None**.
