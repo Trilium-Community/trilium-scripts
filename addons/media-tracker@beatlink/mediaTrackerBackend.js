@@ -1208,16 +1208,24 @@ async function importStremio(settings) {
 
     const items = []
 
+    // The playback position, falling back to the last video in the watched record ("<videoId>:<count>:<bitfield>") when none is saved.
+    const positionOf = (item) => item.state?.video_id
+        || String(item.state?.watched || "").split(":").slice(0, -2).join(":")
+
+    // Removing a title from the Stremio library keeps its watch state, so a removed title still counts once watched or started as a series.
+    const keptAfterRemoval = (item) => item.state?.timesWatched > 0 || !!item.state?.flaggedWatched
+        || (item.type === "series" && positionOf(item).split(":").length === 3)
+
     for (const item of library || []) {
-        if (item.removed || item.type === "other") continue
+        if (item.type === "other" || (item.removed && !keptAfterRemoval(item))) continue
         // Stremio ids are imdb ids, optionally suffixed ":season:episode".
         const imdbId = String(item._id || "").split(":")[0]
         if (!imdbId.startsWith("tt")) continue
 
         const mediaType = item.type === "series" ? "show" : "movie"
         const watched = {}
-        if (mediaType === "show" && item.state?.video_id) {
-            const parts = String(item.state.video_id).split(":")
+        if (mediaType === "show" && positionOf(item)) {
+            const parts = positionOf(item).split(":")
             const season = Number(parts[1])
             const episode = Number(parts[2])
             // Stremio tracks only the current position, not full history, so
