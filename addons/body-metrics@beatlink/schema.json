@@ -1,0 +1,35 @@
+{
+    "renderNoteId": {
+        "type": "note",
+        "hidden": true,
+        "label": "Render Note",
+        "description": "An existing note to turn into a second view of body metrics. Selecting it converts that note into a render note pointing at the widget; clearing it reverts the previously-chosen note to a text note.",
+        "tab": "Render Note"
+    },
+    "weightUnit": {
+        "type": "select",
+        "label": "Weight Unit",
+        "description": "Label shown beside every weight metric. Recorded numbers are never converted, so switching this relabels existing data rather than recalculating it.",
+        "options": [
+            { "value": "kg", "label": "Kilograms (kg)" },
+            { "value": "lb", "label": "Pounds (lb)" }
+        ],
+        "tab": "Units"
+    },
+    "lengthUnit": {
+        "type": "select",
+        "label": "Length Unit",
+        "description": "Label shown beside every length metric such as waist or chest, and the unit height is entered in. Recorded numbers are never converted.",
+        "options": [
+            { "value": "cm", "label": "Centimetres (cm)" },
+            { "value": "in", "label": "Inches (in)" }
+        ],
+        "tab": "Units"
+    },
+    "height": {
+        "type": "number",
+        "label": "Height",
+        "description": "Your height in the length unit above. When set, BMI is worked out from the Weight metric. Leave at 0 to hide BMI.",
+        "tab": "Units"
+    }
+}

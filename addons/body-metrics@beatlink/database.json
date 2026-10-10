@@ -1,0 +1,14 @@
+{
+    "metrics": [
+        { "id": "weight", "name": "Weight", "kind": "weight", "unit": "", "goal": 0, "comment": "" },
+        { "id": "bodyfat", "name": "Body Fat", "kind": "percent", "unit": "", "goal": 0, "comment": "" },
+        { "id": "waist", "name": "Waist", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "chest", "name": "Chest", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "hips", "name": "Hips", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "arm", "name": "Arm", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "thigh", "name": "Thigh", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "neck", "name": "Neck", "kind": "length", "unit": "", "goal": 0, "comment": "" },
+        { "id": "restinghr", "name": "Resting Heart Rate", "kind": "custom", "unit": "bpm", "goal": 0, "comment": "" }
+    ],
+    "log": {}
+}

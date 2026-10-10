@@ -1,0 +1,253 @@
+{
+    "id": "body-metrics@beatlink",
+    "name": "Body Metrics",
+    "description": "A body measurement log for weight, body fat, waist, chest and any other metric you define with its own unit. Each day holds one reading per metric plus a note, shown beside the previous reading and the change since. Metrics can carry a goal, the reports tab plots any one of them over 30 days to all time with a 7-day moving average and the goal line, beside its latest value, change, lowest, highest and distance to goal, and BMI is worked out from weight when a height is set. Weights and lengths are labelled in kg/lb and cm/in from settings. All data is a single persisted JSON note.",
+    "author": "BeatLink",
+    "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/body-metrics@beatlink",
+    "license": "GPL-3.0-or-later",
+    "latestVersion": "1.0.0",
+    "type": "widget",
+    "readme": "README.md",
+    "manifestSourceUrl": "https://trilium-community.github.io/trilium-scripts/body-metrics@beatlink/_tam_manifest_.json",
+    "manifest": {
+        "settingsNote": "settings-page",
+        "notes": [
+            {
+                "id": "launcher",
+                "title": "body-metrics@beatlink",
+                "type": "render",
+                "mime": "text/html",
+                "sourceUrl": null
+            },
+            {
+                "id": "widget",
+                "title": "bodyMetricsWidget.jsx",
+                "type": "code",
+                "mime": "text/jsx",
+                "sourceUrl": "bodyMetricsWidget.jsx"
+            },
+            {
+                "id": "lib",
+                "title": "libBodyMetrics.js",
+                "type": "code",
+                "mime": "application/javascript;env=frontend",
+                "sourceUrl": "libBodyMetrics.js"
+            },
+            {
+                "id": "style",
+                "title": "bodyMetrics.css",
+                "type": "code",
+                "mime": "text/css",
+                "sourceUrl": "bodyMetrics.css"
+            },
+            {
+                "id": "schema",
+                "title": "schema.json",
+                "type": "code",
+                "mime": "application/json",
+                "sourceUrl": "schema.json"
+            },
+            {
+                "id": "defaults",
+                "title": "defaults.json",
+                "type": "code",
+                "mime": "application/json",
+                "sourceUrl": "defaults.json"
+            },
+            {
+                "id": "config",
+                "title": "config.json",
+                "type": "code",
+                "mime": "application/json",
+                "sourceUrl": null
+            },
+            {
+                "id": "database",
+                "title": "database.json",
+                "type": "code",
+                "mime": "application/json",
+                "sourceUrl": "database.json"
+            },
+            {
+                "id": "settings-page",
+                "title": "Settings",
+                "type": "render",
+                "mime": "text/html",
+                "sourceUrl": null
+            },
+            {
+                "id": "settings",
+                "title": "settings.jsx",
+                "type": "code",
+                "mime": "text/jsx",
+                "sourceUrl": "settings.jsx"
+            },
+            {
+                "id": "readme",
+                "title": "README.md",
+                "type": "code",
+                "mime": "text/markdown",
+                "sourceUrl": "README.md",
+                "renderAsHTML": true
+            },
+            {
+                "id": "libsettings-core",
+                "title": "libSettingsCore.js",
+                "type": "code",
+                "mime": "application/javascript;env=frontend",
+                "sourceUrl": "../../libs/libsettings/libsettings-core.js"
+            },
+            {
+                "id": "libsettings-ui",
+                "title": "libSettingsUI.jsx",
+                "type": "code",
+                "mime": "text/jsx",
+                "sourceUrl": "../../libs/libsettings/libsettings-ui.jsx"
+            },
+            {
+                "id": "libsettings-style",
+                "title": "libSettingsUI.css",
+                "type": "code",
+                "mime": "text/css",
+                "sourceUrl": "../../libs/libsettings/libsettings-ui.css"
+            }
+        ],
+        "children": [
+            {
+                "parent": "root",
+                "child": "launcher"
+            },
+            {
+                "parent": "launcher",
+                "child": "widget"
+            },
+            {
+                "parent": "launcher",
+                "child": "style"
+            },
+            {
+                "parent": "launcher",
+                "child": "schema"
+            },
+            {
+                "parent": "launcher",
+                "child": "defaults"
+            },
+            {
+                "parent": "persistence",
+                "child": "config"
+            },
+            {
+                "parent": "persistence",
+                "child": "database"
+            },
+            {
+                "parent": "launcher",
+                "child": "settings-page"
+            },
+            {
+                "parent": "settings-page",
+                "child": "settings"
+            },
+            {
+                "parent": "launcher",
+                "child": "readme"
+            },
+            {
+                "parent": "widget",
+                "child": "lib"
+            },
+            {
+                "parent": "libsettings-ui",
+                "child": "libsettings-core"
+            },
+            {
+                "parent": "libsettings-ui",
+                "child": "libsettings-style"
+            },
+            {
+                "parent": "widget",
+                "child": "libsettings-ui"
+            },
+            {
+                "parent": "settings",
+                "child": "libsettings-ui"
+            }
+        ],
+        "relations": [
+            {
+                "from": "settings",
+                "type": "configNote",
+                "to": "config"
+            },
+            {
+                "from": "settings",
+                "type": "schemaNote",
+                "to": "schema"
+            },
+            {
+                "from": "widget",
+                "type": "schemaNote",
+                "to": "schema"
+            },
+            {
+                "from": "widget",
+                "type": "settingsNote",
+                "to": "settings"
+            },
+            {
+                "from": "widget",
+                "type": "database",
+                "to": "database"
+            },
+            {
+                "from": "launcher",
+                "type": "renderNote",
+                "to": "widget"
+            },
+            {
+                "from": "config",
+                "type": "sourceConfig",
+                "to": "defaults"
+            },
+            {
+                "from": "settings-page",
+                "type": "renderNote",
+                "to": "settings"
+            }
+        ],
+        "labels": [
+            {
+                "note": "style",
+                "name": "appCss",
+                "value": ""
+            },
+            {
+                "note": "widget",
+                "name": "bodyMetricsRender",
+                "value": ""
+            },
+            {
+                "note": "launcher",
+                "name": "iconClass",
+                "value": "bx bx-body"
+            },
+            {
+                "note": "libsettings-style",
+                "name": "appCss",
+                "value": ""
+            },
+            {
+                "note": "settings-page",
+                "name": "iconClass",
+                "value": "bx bx-cog"
+            }
+        ],
+        "readmeNote": "readme",
+        "settings": {
+            "schema": "schema",
+            "defaults": "defaults",
+            "config": "config"
+        }
+    }
+}

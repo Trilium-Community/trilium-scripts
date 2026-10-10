@@ -1,0 +1,201 @@
+.body-metrics-widget {
+    padding: 10px 14px 20px 14px;
+}
+
+.body-metrics-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-bottom: 2px solid var(--main-border-color);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+}
+
+.body-metrics-spacer {
+    flex: 1;
+}
+
+.body-metrics-tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    cursor: pointer;
+    color: var(--muted-text-color);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.body-metrics-tab-btn-active {
+    color: var(--main-text-color);
+    border-bottom-color: var(--main-border-color);
+    font-weight: 600;
+}
+
+.body-metrics-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.body-metrics-toolbar select,
+.body-metrics-toolbar input[type="date"],
+.body-metrics-table input[type="number"],
+.body-metrics-form input,
+.body-metrics-form select,
+.body-metrics-field textarea {
+    padding: 4px 6px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 4px;
+    background: var(--input-background-color, transparent);
+    color: inherit;
+    font: inherit;
+}
+
+.body-metrics-heading {
+    margin: 18px 0 8px 0;
+}
+
+.body-metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    margin-bottom: 8px;
+}
+
+.body-metrics-table th {
+    text-align: left;
+    font-weight: 600;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--main-border-color);
+    white-space: nowrap;
+}
+
+.body-metrics-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--main-border-color);
+    vertical-align: middle;
+}
+
+.body-metrics-table input[type="number"] {
+    width: 90px;
+}
+
+.body-metrics-reading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.body-metrics-row-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* The history table gains a column per metric, so it scrolls sideways rather than squeezing. */
+.body-metrics-scroll {
+    overflow-x: auto;
+}
+
+.body-metrics-form {
+    max-width: 480px;
+}
+
+.body-metrics-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 10px 0;
+    max-width: 480px;
+}
+
+.body-metrics-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.body-metrics-hint {
+    color: var(--muted-text-color);
+    font-size: 0.9em;
+}
+
+.body-metrics-card {
+    border: 1px solid var(--main-border-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+
+.body-metrics-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.body-metrics-card-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 110px;
+    padding: 8px 10px;
+    border: 1px solid var(--main-border-color);
+    border-radius: 6px;
+}
+
+.body-metrics-card-value {
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.body-metrics-card-label {
+    font-size: 0.8em;
+    color: var(--muted-text-color);
+}
+
+/* Charts are inline SVG, so they take their colours from the theme. */
+.body-metrics-chart {
+    width: 100%;
+    height: auto;
+    margin-bottom: 8px;
+}
+
+.body-metrics-chart-axis {
+    stroke: var(--main-border-color);
+    stroke-width: 1;
+}
+
+.body-metrics-chart-label {
+    fill: var(--muted-text-color);
+    font-size: 11px;
+}
+
+.body-metrics-chart-line {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.body-metrics-chart-dot {
+    fill: currentColor;
+    opacity: 0.5;
+}
+
+.body-metrics-chart-goal {
+    stroke: var(--muted-text-color);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+}
+
+.body-metrics-ok {
+    color: #27ae60;
+}
+
+.body-metrics-error {
+    color: #c0392b;
+    margin-bottom: 8px;
+}
