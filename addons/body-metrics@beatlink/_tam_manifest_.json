@@ -8,6 +8,7 @@
     "latestVersion": "1.0.0",
     "type": "widget",
     "readme": "README.md",
+    "changelog": "CHANGELOG.md",
     "manifestSourceUrl": "https://trilium-community.github.io/trilium-scripts/body-metrics@beatlink/_tam_manifest_.json",
     "manifest": {
         "settingsNote": "settings-page",
