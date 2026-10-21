@@ -3,6 +3,11 @@
 Integrates [Draw.io](https://www.drawio.com/) diagram editing into TriliumNext. Click any SVG note created from the template to open the Draw.io editor inline.
 
 > Packaged from [SiriusXT/trilium-drawio](https://github.com/SiriusXT/trilium-drawio). All credit to [@SiriusXT](https://github.com/SiriusXT).
+>
+> The "Update draw.io" workflow checks upstream daily and lands its newest widget with this repo's local changes
+> (`upstream.patch`, which keeps the edit button in zen mode) re-applied, then publishes it; if the changes no
+> longer apply, the workflow fails and the update is merged by hand. The Draw.io editor itself always loads live
+> from `embed.diagrams.net`.
 
 ## Features
 

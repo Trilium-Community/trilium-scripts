@@ -2239,7 +2239,72 @@ async function cmdBumpRecurrenceInput(args) {
     writeText(RECURRENCE_INPUT_MANIFEST, jsonDumps(manifest, 4) + "\n");
     console.log(`agenda-task@beatlink ${addonVersion}: recurrence-input ${pinnedPackage.version} -> ${newest} (${latest.slice(0, 7)})`);
     if (process.env.GITHUB_OUTPUT) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated=true\nlibrary_version=${newest}\naddon_version=${addonVersion}\ncommit=${latest}\n`);
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated=true\naddon=agenda-task\naddon_version=${addonVersion}\nmessage=feat(agenda-task): update recurrence-input to ${newest}\n`);
+    }
+}
+
+
+// ===========================================================================
+// bump-drawio
+// ===========================================================================
+
+/* drawio@siriusxt vendors SiriusXT/trilium-drawio's widget with a few local
+ * changes, kept as upstream.patch beside it together with the upstream commit
+ * they apply to. This command takes upstream's newest copy, re-applies the patch
+ * and bumps the addon's patch version; a patch that no longer applies stops it,
+ * since merging the two is a person's job.
+ */
+
+const DRAWIO_REPO = "SiriusXT/trilium-drawio";
+const DRAWIO_FILE = "trilium-drawio.js";
+const DRAWIO_DIR = "addons/drawio@siriusxt";
+const DRAWIO_MANIFEST = `${DRAWIO_DIR}/_tam_manifest_.json`;
+const DRAWIO_PATCH = `${DRAWIO_DIR}/upstream.patch`;
+const DRAWIO_BASE_RE = /^Upstream commit: ([0-9a-f]{40})$/m;
+
+
+async function cmdBumpDrawio(args) {
+    if (!exists(DRAWIO_PATCH)) die(`ERROR: ${DRAWIO_PATCH} not found -- run from the repo root`);
+    const patch = readText(DRAWIO_PATCH);
+    const base = DRAWIO_BASE_RE.exec(patch)?.[1];
+    if (!base) die(`ERROR: ${DRAWIO_PATCH} has no "Upstream commit:" line`);
+
+    const head = runGit(["ls-remote", `https://github.com/${DRAWIO_REPO}`, "refs/heads/main"]);
+    const latest = head && head.split(/\s+/)[0];
+    if (!/^[0-9a-f]{40}$/.test(latest || "")) die(`ERROR: could not resolve ${DRAWIO_REPO}'s main branch`);
+
+    const fileUrl = (commit) => `https://raw.githubusercontent.com/${DRAWIO_REPO}/${commit}/${DRAWIO_FILE}`;
+    const [baseBytes, latestBytes] = latest === base ? [null, null] : await Promise.all([fetchBuffer(fileUrl(base)), fetchBuffer(fileUrl(latest))]);
+    if (latest === base || baseBytes.equals(latestBytes)) {
+        console.log(`drawio@siriusxt is current with ${DRAWIO_REPO}'s ${DRAWIO_FILE} (${latest.slice(0, 7)}).`);
+        return;
+    }
+    if (latestBytes.length === 0) die(`ERROR: ${fileUrl(latest)} is empty`);
+
+    if (args.check) {
+        console.error(`${DRAWIO_DIR}/${DRAWIO_FILE}: upstream changed between ${base.slice(0, 7)} and ${latest.slice(0, 7)}`);
+        console.error("  run: node resources/scripts/tamhelper.js bump-drawio");
+        process.exit(1);
+    }
+
+    const target = `${DRAWIO_DIR}/${DRAWIO_FILE}`;
+    const previous = readText(target);
+    fs.writeFileSync(target, latestBytes);
+    if (runGit(["apply", DRAWIO_PATCH]) === null) {
+        writeText(target, previous);
+        die(`ERROR: ${DRAWIO_PATCH} no longer applies to ${DRAWIO_REPO} ${latest.slice(0, 7)} -- merge the local changes by hand`);
+    }
+    writeText(DRAWIO_PATCH, patch.replace(DRAWIO_BASE_RE, `Upstream commit: ${latest}`));
+
+    const manifest = JSON.parse(readText(DRAWIO_MANIFEST));
+    const [addonMajor, addonMinor, addonPatch] = manifest.latestVersion.split(".").map(Number);
+    const addonVersion = `${addonMajor}.${addonMinor}.${addonPatch + 1}`;
+    manifest.latestVersion = addonVersion;
+    writeText(DRAWIO_MANIFEST, jsonDumps(manifest, 4) + "\n");
+    const upstreamVersion = /version:\s*([\w.-]+)/.exec(latestBytes.toString("utf8"))?.[1] ?? latest.slice(0, 7);
+    console.log(`drawio@siriusxt ${addonVersion}: ${DRAWIO_REPO} ${base.slice(0, 7)} -> ${latest.slice(0, 7)} (${upstreamVersion})`);
+    if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated=true\naddon=drawio\naddon_version=${addonVersion}\nmessage=feat(drawio): update the vendored widget to upstream ${upstreamVersion}\n`);
     }
 }
 
@@ -2479,6 +2544,7 @@ commands:
   generate-readme                           Regenerate README.md's addon table
   bump-halon [--check]                      Re-pin halon@beatlink when Halon's stylesheet changes
   bump-recurrence-input [--check]           Re-pin agenda-task@beatlink to the newest recurrence-input release in its major
+  bump-drawio [--check]                     Update drawio@siriusxt to upstream's widget with upstream.patch re-applied
   changelog [--check] [--addons-dir D]      Regenerate every addon's CHANGELOG.md from git history
   publish-release [--since REF]             Upload *.zip files + the catalog to Releases
 `;
@@ -2516,6 +2582,9 @@ async function main() {
             break;
         case "bump-recurrence-input":
             await cmdBumpRecurrenceInput(args);
+            break;
+        case "bump-drawio":
+            await cmdBumpDrawio(args);
             break;
         case "changelog":
             cmdChangelog(args);

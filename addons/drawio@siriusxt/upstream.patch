@@ -1,0 +1,22 @@
+Local changes to trilium-drawio.js, re-applied by `node resources/scripts/tamhelper.js bump-drawio`.
+Upstream: https://github.com/SiriusXT/trilium-drawio
+Upstream commit: a84c1377c3190c57d1d711c3cced8da92229de98
+
+diff --git a/addons/drawio@siriusxt/trilium-drawio.js b/addons/drawio@siriusxt/trilium-drawio.js
+--- a/addons/drawio@siriusxt/trilium-drawio.js
++++ b/addons/drawio@siriusxt/trilium-drawio.js
+@@ -30,6 +30,14 @@ const styleContent = `
+     width: 100%;
+     height: 100%;
+ }
++
++body.zen .note-split.mime-image-svg-xml .ribbon-button-container {
++    display: flex !important;
++}
++
++body.zen .note-split.mime-image-svg-xml .title-row .drawio-edit.icon-action {
++    display: block !important;
++}
+ `;
+ 
+ const styleElement = document.createElement('style');
