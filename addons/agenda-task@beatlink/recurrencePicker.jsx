@@ -13,6 +13,7 @@ export function RecurrencePicker({ recurrence, onChange }){
                 weekday-format="narrow"
                 input-class="form-control"
                 select-class="form-select"
+                button-class="btn btn-sm btn-secondary"
                 toggle-class="btn btn-primary"
                 toggle-input-class="btn-check"
                 onChange={event => onChange(event.target.value || null)}

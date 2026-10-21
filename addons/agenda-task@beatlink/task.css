@@ -105,19 +105,44 @@
             flex: 1 1 auto;
             width: auto !important;
         }
-        > input[type="datetime-local"] {
+        > input[type="datetime-local"], > input[type="date"], > .recurrence-input__list {
             flex-basis: 100%;
+        }
+    }
+    .recurrence-input__item {
+        width: 100%;
+        flex-wrap: nowrap;
+        > select, > input {
+            flex: 1 1 auto;
+            width: auto !important;
+            min-width: 0;
+        }
+        > select {
+            flex: 1 1 0;
+            padding-left: 0.5rem;
+            padding-right: 1.5rem;
+            background-position: right 0.4rem center;
+        }
+        > select + select {
+            flex-grow: 1.5;
         }
     }
     .recurrence-input__weekdays .recurrence-input__controls > * {
         flex: 1 1 1.5rem;
     }
-    .recurrence-input__weekday-label {
+    .recurrence-input__months .recurrence-input__controls > * {
+        flex: 1 1 2.5rem;
+    }
+    .recurrence-input__toggle-label {
         width: 100%;
         min-width: 1.5rem;
         padding: 0;
         line-height: 2rem;
         text-align: center;
+    }
+    .recurrence-input__part > input {
+        flex: 1;
+        min-width: 0;
     }
 }
 
@@ -136,7 +161,7 @@
     position-anchor: --x-recurrence-anchor;
     position-area: bottom;
     position-try-fallbacks: flip-block;
-    width: 14rem !important;
+    width: 17rem !important;
     max-width: 90vw !important;
     max-height: 80vh;
     overflow-y: auto;

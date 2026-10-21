@@ -13,8 +13,11 @@ its sections outgrow the window.
 
 The picker and the rule handling (plain-English text, the next occurrence on completion, reschedule
 dates) come from [recurrence-input](https://github.com/BeatLink/Recurrence-Widget), loaded from a
-commit-pinned URL, so they stay in step with that library. Editing a rule keeps any part the picker
-does not show, such as a `BYSETPOS` written by another app.
+commit-pinned URL, so they stay in step with that library. The picker covers every RFC 5545 rule
+part (several times a day, several days or weekdays of the month, "only the last of those", and a
+More options section for the rest), and editing a rule keeps anything it cannot edit exactly as
+written. Rules are stored in floating local time, so an end date is written without a `Z`, as the
+iCalendar feed's floating start times require; older rules with a `Z` still read the same.
 
 ## How it works
 
