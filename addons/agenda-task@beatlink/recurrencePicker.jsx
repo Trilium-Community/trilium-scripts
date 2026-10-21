@@ -9,6 +9,7 @@ export function RecurrencePicker({ recurrence, onChange }){
         <div className="recurrence-picker">
             <recurrence-input
                 value={recurrence || ""}
+                features="standard"
                 time-mode="floating"
                 weekday-format="narrow"
                 input-class="form-control"

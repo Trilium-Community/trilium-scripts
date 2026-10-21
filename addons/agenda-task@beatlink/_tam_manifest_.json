@@ -5,7 +5,7 @@
     "author": "BeatLink",
     "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/agenda-task@beatlink",
     "license": "GPL-3.0-or-later",
-    "latestVersion": "3.7.0",
+    "latestVersion": "3.8.0",
     "type": "widget",
     "readme": "README.md",
     "changelog": "CHANGELOG.md",
@@ -46,7 +46,7 @@
                 "title": "recurrence-input.js",
                 "type": "code",
                 "mime": "text/jsx",
-                "sourceUrl": "https://raw.githubusercontent.com/BeatLink/Recurrence-Widget/7803725b01387514524af8ca467ba7a08589005b/recurrence-input.js"
+                "sourceUrl": "https://raw.githubusercontent.com/BeatLink/Recurrence-Widget/9166288dd12c401388e77d54b8661bdc241424b8/recurrence-input.js"
             },
             {
                 "id": "lib-task-settings",
