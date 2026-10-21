@@ -1,11 +1,11 @@
 {
     "id": "multisort@beatlink",
     "name": "MultiSort",
-    "description": "Sorts note children by multiple attributes and criteria using the #multiSorted label.",
+    "description": "Moves #multiSorted notes onto Trilium's native multi-level #sorted label.",
     "author": "BeatLink",
     "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/multisort@beatlink",
     "license": "GPL-3.0-or-later",
-    "latestVersion": "1.3.0",
+    "latestVersion": "2.0.0",
     "type": "script",
     "readme": "README.md",
     "changelog": "CHANGELOG.md",
@@ -20,13 +20,6 @@
                 "sourceUrl": "multisort.js"
             },
             {
-                "id": "lib",
-                "title": "libMultisort.js",
-                "type": "code",
-                "mime": "application/javascript;env=frontend",
-                "sourceUrl": "../../libs/libmultisort/libmultisort.js"
-            },
-            {
                 "id": "readme",
                 "title": "README.md",
                 "type": "code",
@@ -39,10 +32,6 @@
             {
                 "parent": "root",
                 "child": "script"
-            },
-            {
-                "parent": "script",
-                "child": "lib"
             },
             {
                 "parent": "root",

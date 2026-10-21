@@ -1,33 +1,20 @@
 # MultiSort
 
-Automatically sorts the children of any note labelled `#multiSorted` by multiple attributes and criteria.
+Trilium 0.106.0 sorts child notes by several criteria natively, so this addon no longer sorts anything itself. It moves notes still using `#multiSorted` onto the native `#sorted` label, and you can uninstall it once that has run.
 
-## Setup
-
-Add `#multiSorted="<sortCriteria>"` to any note whose children you want sorted. The script runs at frontend startup and applies the sort order.
-
-## Sort string format
-
-Attributes separated by `;`. Each attribute can have colon-separated flags.
+## Native sorting
 
 ```
-#multiSorted="priority:desc;area;startDateTime;title:caseInsensitive"
+#sorted="priority desc, area, startDateTime, title"
 ```
 
-The example sorts children first by `priority` descending, then by `area`, then by `startDateTime`, then by `title` case-insensitively.
+Levels are separated by commas; each is `title`, `dateCreated`, `dateModified` or a label name, optionally followed by `asc` or `desc`. See Trilium's *Sorting Notes* guide for `#sortDirection`, `#top`, `#bottom` and the rest.
 
-| Flag              | Effect                     |
-|-------------------|----------------------------|
-| `desc`            | Sort descending            |
-| `caseInsensitive` | Ignore case when comparing |
+## What the migration does
 
-## Built-in attributes
+At frontend startup, for every note labelled `#multiSorted`:
 
-`noteId`, `title`, `dateCreated`, `dateModified` are read from the note directly. All other names resolve via `getLabelValue()`.
+1. Converts the value: `priority:desc;area;title:caseInsensitive` becomes `#sorted="priority desc, area, title"`
+2. Removes `#multiSorted` from the note and `#multiSortedValue_{parentId}` from its children
 
-## How it works
-
-1. Searches for all notes with `#multiSorted`
-2. Sorts each note's children using [MultiSort Library](../libmultisort@beatlink/)
-3. Saves each child's sort position as `#multiSortedValue_{parentId}`
-4. Sets `#sorted=multiSortedValue_{parentId}` on the parent so TriliumNext applies the order
+Native sorting always ignores case, so `caseInsensitive` is dropped. A `#multiSorted` value with a `~relation` criterion has no native equivalent; that note is left unchanged and reported with an error message.

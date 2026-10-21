@@ -1,6 +1,6 @@
 # MultiSort Library
 
-Shared library for sorting TriliumNext notes by multiple attributes. Used as a dependency by addons that need multi-criteria sorting.
+Shared library for sorting TriliumNext notes by multiple attributes. Used as a dependency by addons that need multi-criteria sorting of notes in memory; to keep a parent's children sorted, use Trilium's native `#sorted="priority desc, dueDate"` instead.
 
 ## Usage
 

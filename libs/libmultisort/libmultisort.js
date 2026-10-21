@@ -28,7 +28,7 @@ const BUILTINS = new Set(["noteId", "title", "dateCreated", "dateModified"]);
 // stable slugs like "career" — sorting those as strings gives alphabetical, not
 // the configured area order). A value missing from the map sorts after every
 // mapped one, so unknown/retired values collect at the end instead of
-// interleaving. Callers that pass no map (multisort@beatlink) are unaffected.
+// interleaving.
 function getValue(note, attribute, valueMaps) {
     if (BUILTINS.has(attribute)) {
         return note[attribute] ?? "";
