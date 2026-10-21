@@ -1,19 +1,23 @@
 name: Update recurrence-input
 
-# Opens a pull request moving agenda-task@beatlink to the newest recurrence-input
-# release in its major version, so a library release reaches installations as a
-# reviewed addon update.
+# Lands a commit on main moving agenda-task@beatlink to the newest recurrence-input
+# release in its major version, then starts the publish and Pages workflows, which
+# a push made with GITHUB_TOKEN does not trigger on its own.
 on:
   schedule:
     - cron: "23 6 * * *"
   workflow_dispatch:
+
+concurrency:
+  group: recurrence-input
+  cancel-in-progress: false
 
 jobs:
   bump:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pull-requests: write
+      actions: write
     steps:
       # Full history: the changelog is derived from it.
       - uses: actions/checkout@v4
@@ -24,31 +28,35 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Re-pin recurrence-input
+      - name: Re-pin recurrence-input and land it
         id: bump
-        run: node resources/scripts/tamhelper.js bump-recurrence-input
-
-      - name: Open a pull request
-        if: steps.bump.outputs.updated == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LIBRARY_VERSION: ${{ steps.bump.outputs.library_version }}
-          ADDON_VERSION: ${{ steps.bump.outputs.addon_version }}
-          COMMIT: ${{ steps.bump.outputs.commit }}
         run: |
-          branch="recurrence-input-$LIBRARY_VERSION"
-          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
-            echo "A pull request for recurrence-input $LIBRARY_VERSION is already open on $branch."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          node resources/scripts/tamhelper.js validate
-          git commit -am "feat(agenda-task): update recurrence-input to $LIBRARY_VERSION"
-          node resources/scripts/tamhelper.js changelog
-          git commit -am "chore: regenerate the changelog for agenda-task $ADDON_VERSION"
-          git push origin "$branch"
-          gh pr create --base main --head "$branch" \
-            --title "feat(agenda-task): update recurrence-input to $LIBRARY_VERSION" \
-            --body "Moves agenda-task@beatlink $ADDON_VERSION to recurrence-input $LIBRARY_VERSION, pinned to [\`${COMMIT:0:7}\`](https://github.com/BeatLink/Recurrence-Widget/commit/$COMMIT). Release notes: https://github.com/BeatLink/Recurrence-Widget/commits/$COMMIT. Merging publishes the update to every installation."
+          # A push that loses a race with another push starts again from the new main.
+          for attempt in 1 2 3; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            : > "$RUNNER_TEMP/bump-output"
+            GITHUB_OUTPUT="$RUNNER_TEMP/bump-output" node resources/scripts/tamhelper.js bump-recurrence-input
+            if ! grep -q "^updated=true" "$RUNNER_TEMP/bump-output"; then exit 0; fi
+            . <(sed 's/^\([a-z_]*\)=/\U\1=/' "$RUNNER_TEMP/bump-output")
+            node resources/scripts/tamhelper.js validate
+            git commit -qam "feat(agenda-task): update recurrence-input to $LIBRARY_VERSION"
+            node resources/scripts/tamhelper.js changelog
+            git commit -qam "chore: regenerate the changelog for agenda-task $ADDON_VERSION"
+            if git push origin HEAD:main; then
+              echo "landed=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "Could not land the update after 3 attempts." >&2
+          exit 1
+
+      - name: Publish the update
+        if: steps.bump.outputs.landed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run publish.yml --ref main
+          gh workflow run pages.yml --ref main
