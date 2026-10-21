@@ -11,6 +11,11 @@ button reading the current rule back in plain English ("Every 2 weeks on Monday"
 repeat"); clicking it opens the recurrence picker in a popover. The pane scrolls vertically when
 its sections outgrow the window.
 
+The picker and the rule handling (plain-English text, the next occurrence on completion, reschedule
+dates) come from [recurrence-input](https://github.com/BeatLink/Recurrence-Widget), loaded from a
+commit-pinned URL, so they stay in step with that library. Editing a rule keeps any part the picker
+does not show, such as a `BYSETPOS` written by another app.
+
 ## How it works
 
 The widget appears in the right pane on any note whose type is marked actionable (`#agendaTaskWidget`

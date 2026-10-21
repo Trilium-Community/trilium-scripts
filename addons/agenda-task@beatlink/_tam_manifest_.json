@@ -5,7 +5,7 @@
     "author": "BeatLink",
     "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/agenda-task@beatlink",
     "license": "GPL-3.0-or-later",
-    "latestVersion": "3.5.1",
+    "latestVersion": "3.6.0",
     "type": "widget",
     "readme": "README.md",
     "changelog": "CHANGELOG.md",
@@ -35,13 +35,6 @@
                 "sourceUrl": "recurrencePicker.jsx"
             },
             {
-                "id": "togglebutton",
-                "title": "FormToggleButton.jsx",
-                "type": "code",
-                "mime": "text/jsx",
-                "sourceUrl": "FormToggleButton.jsx"
-            },
-            {
                 "id": "lib-task",
                 "title": "libAgendaTask.js",
                 "type": "code",
@@ -49,11 +42,11 @@
                 "sourceUrl": "libAgendaTask.js"
             },
             {
-                "id": "lib-recurrence",
-                "title": "libRecurrence.js",
+                "id": "recurrence-input",
+                "title": "recurrence-input.js",
                 "type": "code",
-                "mime": "application/javascript;env=frontend",
-                "sourceUrl": "libRecurrence.js"
+                "mime": "text/jsx",
+                "sourceUrl": "https://raw.githubusercontent.com/BeatLink/Recurrence-Widget/b4d97e955e3d95307398c2ed0f58a1956582249d/recurrence-input.js"
             },
             {
                 "id": "lib-task-settings",
@@ -149,7 +142,7 @@
             },
             {
                 "id": "librrule-lib",
-                "title": "rrule.min.js",
+                "title": "rrule",
                 "type": "code",
                 "mime": "application/javascript;env=frontend",
                 "sourceUrl": "../../libs/librrule/rrule.min.js"
@@ -222,18 +215,14 @@
             },
             {
                 "parent": "recurrence-picker",
-                "child": "togglebutton"
-            },
-            {
-                "parent": "recurrence-picker",
-                "child": "lib-task"
+                "child": "recurrence-input"
             },
             {
                 "parent": "lib-task",
-                "child": "lib-recurrence"
+                "child": "recurrence-input"
             },
             {
-                "parent": "lib-recurrence",
+                "parent": "recurrence-input",
                 "child": "librrule-lib"
             },
             {
@@ -328,17 +317,12 @@
                 "value": "bx bx-task"
             },
             {
-                "note": "togglebutton",
-                "name": "iconClass",
-                "value": "bx bx-task"
-            },
-            {
                 "note": "lib-task",
                 "name": "iconClass",
                 "value": "bx bx-task"
             },
             {
-                "note": "lib-recurrence",
+                "note": "recurrence-input",
                 "name": "iconClass",
                 "value": "bx bx-task"
             },

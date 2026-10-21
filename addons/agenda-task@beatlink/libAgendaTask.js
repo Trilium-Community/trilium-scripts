@@ -1,4 +1,4 @@
-const libRecurrence = require("libRecurrence.js")
+const recurrence = require("recurrence-input.js")
 
 function durationStringToHMS(duration) {
     const parsed = api.dayjs.duration(duration)
@@ -50,12 +50,17 @@ async function setTaskLabel(noteIds, name, value) {
     }, [noteIds, name, value ?? ""])
 }
 
+// Recurrence times are local clock times, which recurrence-input calls "floating".
+function humanizeRecurrence(rule) {
+    return recurrence.describe_rule(rule, "floating")
+}
+
 async function updateDependentAttributes(noteId, constants) {
     if (!noteId) return
 
     const note = await api.getNote(noteId)
     const durationDisplay = humanizeDuration(note.getLabelValue(constants.DURATION_LABEL))
-    const recurrenceDisplay = libRecurrence.humanize(note.getLabelValue(constants.RECURRENCE_LABEL))
+    const recurrenceDisplay = humanizeRecurrence(note.getLabelValue(constants.RECURRENCE_LABEL))
 
     await api.runOnBackend((noteId, constants, durationDisplay, recurrenceDisplay) => {
         const note = api.getNote(noteId)
@@ -105,19 +110,19 @@ async function updateDependentAttributes(noteId, constants) {
 async function complete(noteId, constants) {
     const note = await api.getNote(noteId)
     const startDatetime = note.getLabelValue(constants.START_DATETIME_LABEL)
-    const recurrence = note.getLabelValue(constants.RECURRENCE_LABEL)
+    const recurrenceRule = note.getLabelValue(constants.RECURRENCE_LABEL)
 
-    const nextOccurrence = (startDatetime && recurrence)
-        ? libRecurrence.nextOccurrence(recurrence, api.dayjs(startDatetime).toDate())
+    const nextOccurrence = (startDatetime && recurrenceRule)
+        ? recurrence.next_occurrence(recurrenceRule, api.dayjs(startDatetime).toDate(), "floating")
         : null
 
     if (nextOccurrence) {
-        const nextStartDatetime = api.dayjs(nextOccurrence.nextDate).format("YYYY-MM-DDTHH:mm")
+        const nextStartDatetime = api.dayjs(nextOccurrence.next_date).format("YYYY-MM-DDTHH:mm")
         await api.runOnBackend((noteId, recurrence, startDatetime, constants) => {
             const note = api.getNote(noteId)
             note.setLabel(constants.START_DATETIME_LABEL, startDatetime)
             note.setLabel(constants.RECURRENCE_LABEL, recurrence)
-        }, [noteId, nextOccurrence.recurrence, nextStartDatetime, constants])
+        }, [noteId, nextOccurrence.rule, nextStartDatetime, constants])
         await markUndone(noteId)
         // The task lives on at its next occurrence, so it only leaves today if
         // that occurrence isn't today.
@@ -176,7 +181,7 @@ async function rescheduleByDays(noteId, constants, daysToAdd = 0) {
 // no-op.
 async function rescheduleByOption(noteId, constants, option) {
     if (option.mode === "recurrence") {
-        const nextDate = libRecurrence.nextFromNow(option.recurrence)
+        const nextDate = recurrence.next_from_now(option.recurrence, "floating")
         if (!nextDate) return
         const newStart = api.dayjs(nextDate).format("YYYY-MM-DDTHH:mm")
         await api.runOnBackend((noteId, startDatetimeLabel, newStart) => {
@@ -201,10 +206,5 @@ module.exports = {
     updateDependentAttributes,
     clearMyDayFlag,
     clearMyDayFlagIfNotToday,
-    // Re-exported from libRecurrence so consumers that already require this
-    // module (e.g. the Task widget) reach the recurrence helpers through a
-    // single require path instead of bundling libRecurrence a second time.
-    RRuleToObj: libRecurrence.RRuleToObj,
-    ObjToRRule: libRecurrence.ObjToRRule,
-    humanizeRecurrence: libRecurrence.humanize
+    humanizeRecurrence
 }

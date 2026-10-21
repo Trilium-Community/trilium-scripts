@@ -87,91 +87,37 @@
 }
 
 .recurrence-picker {
-    .interval-picker {
-        container-type: inline-size;
-        > div {
-            display: flex;
-            flex-wrap: nowrap;
-            flex-direction: row;
-            gap: 0.25rem;
-            > * {
-                width: 100% !important;
-            }
+    .recurrence-input__row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.25rem;
+    }
+    .recurrence-input__row-label {
+        width: auto;
+    }
+    .recurrence-input__controls {
+        > * {
+            flex: 1 1 4rem;
+            width: 100% !important;
+            min-width: 0;
         }
-        @container ( inline-size < 10rem ) {
-            > div {
-                flex-direction: column;
-            }
+        > select {
+            flex: 1 1 auto;
+            width: auto !important;
+        }
+        > input[type="datetime-local"] {
+            flex-basis: 100%;
         }
     }
-    .weekdays-picker {
-        > div {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            width: 100%;
-            gap: 0.25rem !important;
-            .togglebutton {
-                flex: 1 1 1.5rem;
-            }
-            .togglebutton, .togglebutton > * {
-                min-width: 1.5rem !important;
-                min-height: 1.5rem !important;
-                width: 100% !important;
-                text-align: center !important;
-                padding: 0;
-                line-height: 2rem !important;
-            }
-        }
+    .recurrence-input__weekdays .recurrence-input__controls > * {
+        flex: 1 1 1.5rem;
     }
-    .month-picker {
-        > div {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            width: 100%;
-            gap: 0.25rem !important;
-            > * {
-                flex: 1 1 5.5rem;
-                width: 100% !important;
-            }
-        }
-    }
-    .time-picker {
-        container-type: inline-size;
-        > div {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap;
-            width: 100%;
-            justify-content: space-between;
-            gap: 0.25rem !important;
-            > * {
-                width: 100% !important;
-            }
-        }
-        @container ( inline-size < 12rem ) {
-            > div {
-                flex-direction: column;
-                > * {
-                    width: 100% !important;
-                }
-            }
-        }
-    }
-    .stop-picker {
-        > div {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            width: 100%;
-            gap: 0.25rem !important;
-            > * {
-                flex: 1 1 7rem;
-                width: 1rem !important;
-                max-width: 100% !important;
-            }
-        }
+    .recurrence-input__weekday-label {
+        width: 100%;
+        min-width: 1.5rem;
+        padding: 0;
+        line-height: 2rem;
+        text-align: center;
     }
 }
 
