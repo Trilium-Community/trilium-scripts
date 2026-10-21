@@ -146,6 +146,25 @@
     }
 }
 
+/* Each rule of a multi-rule recurrence sits under its own header with a Remove button. */
+.recurrence-rule + .recurrence-rule {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--main-border-color);
+}
+
+.recurrence-rule-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.recurrence-add-rule {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
 /* The Task pane's recurrence editor: a button reading the rule back in plain
    English, opening the picker in a popover anchored under it. */
 .recurrence-summary {

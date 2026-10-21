@@ -16,7 +16,13 @@ dates) come from [recurrence-input](https://github.com/BeatLink/Recurrence-Widge
 commit-pinned URL, so they stay in step with that library. The picker covers every RFC 5545 rule
 part (several times a day, several days or weekdays of the month, and "only the last of those"),
 using recurrence-input's `standard` feature set, which leaves out the raw More options section; editing
-a rule keeps anything it does not show exactly as written. Rules are stored in floating local time, so an end date is written without a `Z`, as the
+a rule keeps anything it does not show exactly as written.
+
+A task whose times differ by day, such as 14:00 on weekends and 18:00 on weekdays, can have several
+rules: "Add another rule" in the picker adds one, and the label then holds one standard `RRULE:` line
+per rule. Completing or rescheduling the task takes the earliest next date across them, and the
+iCalendar feed writes each line as its own `RRULE`. RFC 5545 discourages more than one `RRULE` per
+event, so some calendar apps show only the first rule; Trilium itself uses all of them. Rules are stored in floating local time, so an end date is written without a `Z`, as the
 iCalendar feed's floating start times require; older rules with a `Z` still read the same.
 
 ## How it works

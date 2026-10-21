@@ -50,9 +50,38 @@ async function setTaskLabel(noteIds, name, value) {
     }, [noteIds, name, value ?? ""])
 }
 
-// Recurrence times are local clock times, which recurrence-input calls "floating".
-function humanizeRecurrence(rule) {
-    return recurrence.describe_rule(rule, "floating")
+// A recurrence label holds one rule, or several standard RRULE lines when a task's times differ by day.
+function splitRules(value) {
+    return (value || "").split(/\r?\n/).map(line => line.trim().replace(/^RRULE:/i, "")).filter(Boolean)
+}
+
+// Joins rules back into a label value: a bare rule when there is one, RRULE lines when there are several.
+function joinRules(rules) {
+    const kept = rules.filter(Boolean)
+    return kept.length > 1 ? kept.map(rule => `RRULE:${rule}`).join("\n") : (kept[0] || "")
+}
+
+// Describes every rule in plain English; recurrence times are local clock times, which recurrence-input calls "floating".
+function humanizeRecurrence(value) {
+    const descriptions = splitRules(value).map(rule => recurrence.describe_rule(rule, "floating"))
+    if (descriptions.some(description => !description)) return ""
+    return descriptions.map((description, index) => index ? description.charAt(0).toLowerCase() + description.slice(1) : description).join("; and ")
+}
+
+// Returns the earliest next occurrence across the rules and the label value to keep, or null once every rule has ended.
+function nextRecurrence(value, startDate) {
+    const rules = splitRules(value)
+    const nexts = rules.map(rule => recurrence.next_occurrence(rule, startDate, "floating"))
+    const earliest = nexts.reduce((best, next, index) => (next && (best < 0 || next.next_date < nexts[best].next_date) ? index : best), -1)
+    if (earliest < 0) return null
+    const kept = rules.map((rule, index) => (index === earliest ? nexts[index].rule : rule)).filter((rule, index) => nexts[index])
+    return { nextDate: nexts[earliest].next_date, recurrence: joinRules(kept) }
+}
+
+// Returns the earliest occurrence from now across the rules, or null when none yields one.
+function nextRecurrenceFromNow(value) {
+    const dates = splitRules(value).map(rule => recurrence.next_from_now(rule, "floating")).filter(Boolean)
+    return dates.length ? new Date(Math.min(...dates)) : null
 }
 
 async function updateDependentAttributes(noteId, constants) {
@@ -113,16 +142,16 @@ async function complete(noteId, constants) {
     const recurrenceRule = note.getLabelValue(constants.RECURRENCE_LABEL)
 
     const nextOccurrence = (startDatetime && recurrenceRule)
-        ? recurrence.next_occurrence(recurrenceRule, api.dayjs(startDatetime).toDate(), "floating")
+        ? nextRecurrence(recurrenceRule, api.dayjs(startDatetime).toDate())
         : null
 
     if (nextOccurrence) {
-        const nextStartDatetime = api.dayjs(nextOccurrence.next_date).format("YYYY-MM-DDTHH:mm")
+        const nextStartDatetime = api.dayjs(nextOccurrence.nextDate).format("YYYY-MM-DDTHH:mm")
         await api.runOnBackend((noteId, recurrence, startDatetime, constants) => {
             const note = api.getNote(noteId)
             note.setLabel(constants.START_DATETIME_LABEL, startDatetime)
             note.setLabel(constants.RECURRENCE_LABEL, recurrence)
-        }, [noteId, nextOccurrence.rule, nextStartDatetime, constants])
+        }, [noteId, nextOccurrence.recurrence, nextStartDatetime, constants])
         await markUndone(noteId)
         // The task lives on at its next occurrence, so it only leaves today if
         // that occurrence isn't today.
@@ -181,7 +210,7 @@ async function rescheduleByDays(noteId, constants, daysToAdd = 0) {
 // no-op.
 async function rescheduleByOption(noteId, constants, option) {
     if (option.mode === "recurrence") {
-        const nextDate = recurrence.next_from_now(option.recurrence, "floating")
+        const nextDate = nextRecurrenceFromNow(option.recurrence)
         if (!nextDate) return
         const newStart = api.dayjs(nextDate).format("YYYY-MM-DDTHH:mm")
         await api.runOnBackend((noteId, startDatetimeLabel, newStart) => {
@@ -206,5 +235,9 @@ module.exports = {
     updateDependentAttributes,
     clearMyDayFlag,
     clearMyDayFlagIfNotToday,
-    humanizeRecurrence
+    humanizeRecurrence,
+    splitRules,
+    joinRules,
+    nextRecurrence,
+    nextRecurrenceFromNow
 }

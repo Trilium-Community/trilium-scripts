@@ -5,7 +5,7 @@ const DEFAULT_PRODID = "-//Beatlink/Trilium Calendar Script"
 // Builds an iCalendar (RFC 5545) string from a list of already-resolved notes.
 // Only notes with both a start and due date (per the given label names)
 // produce an event; a note's recurrenceLabel value (if any) becomes that
-// event's RRULE. Pure function — no note mutation, no HTTP, so it's usable
+// event's RRULE, or one RRULE per line when it holds several. Pure function — no note mutation, no HTTP, so it's usable
 // from any context (a customRequestHandler, a scheduled refresh, a widget).
 function generateCalendar(notes, { startDateLabel, dueDateLabel, recurrenceLabel = "recurrence", prodId = DEFAULT_PRODID }) {
     const calendar = new ical.Component(["vcalendar", [], []])
@@ -26,8 +26,8 @@ function generateCalendar(notes, { startDateLabel, dueDateLabel, recurrenceLabel
             event.summary = String(note.title)
             event.startDate = ical.Time.fromJSDate(new Date(startDate))
             event.endDate = ical.Time.fromJSDate(new Date(dueDate))
-            if (recurrence) {
-                vevent.updatePropertyWithValue("rrule", ical.Recur.fromString(recurrence))
+            for (const rule of (recurrence || "").split(/\r?\n/).map(line => line.trim().replace(/^RRULE:/i, "")).filter(Boolean)) {
+                vevent.addPropertyWithValue("rrule", ical.Recur.fromString(rule))
             }
             calendar.addSubcomponent(vevent)
         }

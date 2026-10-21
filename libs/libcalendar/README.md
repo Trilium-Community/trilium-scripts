@@ -57,7 +57,7 @@ that event's `RRULE`.
 |-------------------|----------|----------------------------------------------------------|
 | `startDateLabel`  | yes      | Label name holding each note's start datetime            |
 | `dueDateLabel`    | yes      | Label name holding each note's due datetime               |
-| `recurrenceLabel` | no       | Label name holding an RRULE string (default `"recurrence"`) |
+| `recurrenceLabel` | no       | Label name holding an RRULE string, or one RRULE per line for several (default `"recurrence"`) |
 | `prodId`          | no       | iCalendar `PRODID` value (default `-//Beatlink/Trilium Calendar Script`) |
 
 ### `respondWithCalendar(api, icalString)`
