@@ -1,0 +1,41 @@
+name: Update draw.io
+
+# Lands a commit on main updating drawio@siriusxt to SiriusXT/trilium-drawio's
+# newest widget with upstream.patch re-applied, then starts the publish and Pages
+# workflows, which a push made with GITHUB_TOKEN does not trigger on its own.
+on:
+  schedule:
+    - cron: "41 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: upstream-bumps
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      # Full history: the changelog is derived from it.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Update the vendored widget and land it
+        id: bump
+        run: bash resources/scripts/land-bump.sh bump-drawio
+
+      - name: Publish the update
+        if: steps.bump.outputs.landed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run publish.yml --ref main
+          gh workflow run pages.yml --ref main
