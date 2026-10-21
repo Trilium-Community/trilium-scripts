@@ -2176,6 +2176,75 @@ async function cmdBumpHalon(args) {
 
 
 // ===========================================================================
+// bump-recurrence-input
+// ===========================================================================
+
+/* agenda-task@beatlink loads recurrence-input from a raw URL pinned to the commit
+ * of one npm release, for the same reason halon@beatlink pins its stylesheet: the
+ * pin moving is what offers installations an update. This command moves it to the
+ * newest npm release within the pinned major version, using the commit npm
+ * recorded for that release, and bumps the addon's patch version; a major release
+ * can change stored rules, so it is left to a person.
+ */
+
+const RECURRENCE_INPUT_REPO = "BeatLink/Recurrence-Widget";
+const RECURRENCE_INPUT_FILE = "recurrence-input.js";
+const RECURRENCE_INPUT_MANIFEST = "addons/agenda-task@beatlink/_tam_manifest_.json";
+const RECURRENCE_INPUT_URL_RE = new RegExp(`^https://raw\\.githubusercontent\\.com/${RECURRENCE_INPUT_REPO}/([0-9a-f]{40})/${RECURRENCE_INPUT_FILE}$`);
+
+
+function compareVersions(a, b) {
+    const [aParts, bParts] = [a, b].map((version) => version.split(".").map(Number));
+    for (let i = 0; i < 3; i++) if (aParts[i] !== bParts[i]) return aParts[i] - bParts[i];
+    return 0;
+}
+
+
+async function cmdBumpRecurrenceInput(args) {
+    if (!exists(RECURRENCE_INPUT_MANIFEST)) die(`ERROR: ${RECURRENCE_INPUT_MANIFEST} not found -- run from the repo root`);
+    const manifest = JSON.parse(readText(RECURRENCE_INPUT_MANIFEST));
+    const note = (manifest.manifest?.notes || []).find((n) => RECURRENCE_INPUT_URL_RE.test(n.sourceUrl || ""));
+    if (!note) die(`ERROR: ${RECURRENCE_INPUT_MANIFEST}: no note carries a commit-pinned ${RECURRENCE_INPUT_REPO} sourceUrl`);
+    const current = RECURRENCE_INPUT_URL_RE.exec(note.sourceUrl)[1];
+
+    const pinnedPackage = JSON.parse((await fetchBuffer(`https://raw.githubusercontent.com/${RECURRENCE_INPUT_REPO}/${current}/package.json`)).toString("utf8"));
+    const major = pinnedPackage.version.split(".")[0];
+    const registry = JSON.parse((await fetchBuffer("https://registry.npmjs.org/recurrence-input")).toString("utf8"));
+    const candidates = Object.keys(registry.versions || {})
+        .filter((version) => /^\d+\.\d+\.\d+$/.test(version) && version.split(".")[0] === major && registry.versions[version].gitHead)
+        .sort(compareVersions);
+    const newest = candidates.at(-1);
+    if (!newest) die(`ERROR: npm has no ${major}.x release of recurrence-input with a recorded commit`);
+    const latest = registry.versions[newest].gitHead;
+
+    if (latest === current || compareVersions(newest, pinnedPackage.version) <= 0) {
+        console.log(`agenda-task@beatlink is pinned to recurrence-input ${pinnedPackage.version} (${current.slice(0, 7)}), the newest ${major}.x release.`);
+        return;
+    }
+
+    // Fetching proves the release's commit serves the file: a pin at a commit that does not carry it installs an empty note.
+    const url = `https://raw.githubusercontent.com/${RECURRENCE_INPUT_REPO}/${latest}/${RECURRENCE_INPUT_FILE}`;
+    if ((await fetchBuffer(url)).length === 0) die(`ERROR: ${url} is empty`);
+
+    if (args.check) {
+        console.error(`${RECURRENCE_INPUT_MANIFEST}: recurrence-input ${newest} is out, pinned to ${pinnedPackage.version}`);
+        console.error("  run: node resources/scripts/tamhelper.js bump-recurrence-input");
+        process.exit(1);
+    }
+
+    const [addonMajor, addonMinor, addonPatch] = manifest.latestVersion.split(".").map(Number);
+    const addonVersion = `${addonMajor}.${addonMinor}.${addonPatch + 1}`;
+    note.sourceUrl = url;
+    manifest.latestVersion = addonVersion;
+    writeText(RECURRENCE_INPUT_MANIFEST, jsonDumps(manifest, 4) + "\n");
+    console.log(`agenda-task@beatlink ${addonVersion}: recurrence-input ${pinnedPackage.version} -> ${newest} (${latest.slice(0, 7)})`);
+    if (process.env.GITHUB_OUTPUT) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated=true\nlibrary_version=${newest}\naddon_version=${addonVersion}\ncommit=${latest}\n`);
+    }
+}
+
+
+// ===========================================================================
 // changelog
 // ===========================================================================
 
@@ -2409,6 +2478,7 @@ commands:
                                             Resolve + hash every manifest into resources/docs/
   generate-readme                           Regenerate README.md's addon table
   bump-halon [--check]                      Re-pin halon@beatlink when Halon's stylesheet changes
+  bump-recurrence-input [--check]           Re-pin agenda-task@beatlink to the newest recurrence-input release in its major
   changelog [--check] [--addons-dir D]      Regenerate every addon's CHANGELOG.md from git history
   publish-release [--since REF]             Upload *.zip files + the catalog to Releases
 `;
@@ -2443,6 +2513,9 @@ async function main() {
             break;
         case "bump-halon":
             await cmdBumpHalon(args);
+            break;
+        case "bump-recurrence-input":
+            await cmdBumpRecurrenceInput(args);
             break;
         case "changelog":
             cmdChangelog(args);

@@ -1,0 +1,54 @@
+name: Update recurrence-input
+
+# Opens a pull request moving agenda-task@beatlink to the newest recurrence-input
+# release in its major version, so a library release reaches installations as a
+# reviewed addon update.
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # Full history: the changelog is derived from it.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Re-pin recurrence-input
+        id: bump
+        run: node resources/scripts/tamhelper.js bump-recurrence-input
+
+      - name: Open a pull request
+        if: steps.bump.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LIBRARY_VERSION: ${{ steps.bump.outputs.library_version }}
+          ADDON_VERSION: ${{ steps.bump.outputs.addon_version }}
+          COMMIT: ${{ steps.bump.outputs.commit }}
+        run: |
+          branch="recurrence-input-$LIBRARY_VERSION"
+          if git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "A pull request for recurrence-input $LIBRARY_VERSION is already open on $branch."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          node resources/scripts/tamhelper.js validate
+          git commit -am "feat(agenda-task): update recurrence-input to $LIBRARY_VERSION"
+          node resources/scripts/tamhelper.js changelog
+          git commit -am "chore: regenerate the changelog for agenda-task $ADDON_VERSION"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "feat(agenda-task): update recurrence-input to $LIBRARY_VERSION" \
+            --body "Moves agenda-task@beatlink $ADDON_VERSION to recurrence-input $LIBRARY_VERSION, pinned to [\`${COMMIT:0:7}\`](https://github.com/BeatLink/Recurrence-Widget/commit/$COMMIT). Release notes: https://github.com/BeatLink/Recurrence-Widget/commits/$COMMIT. Merging publishes the update to every installation."

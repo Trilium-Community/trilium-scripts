@@ -13,7 +13,10 @@ its sections outgrow the window.
 
 The picker and the rule handling (plain-English text, the next occurrence on completion, reschedule
 dates) come from [recurrence-input](https://github.com/BeatLink/Recurrence-Widget), loaded from a
-commit-pinned URL, so they stay in step with that library. The picker covers every RFC 5545 rule
+URL pinned to the commit of one npm release. The "Update recurrence-input" workflow checks npm daily
+and opens a pull request moving the pin to the newest release in the same major version (also
+`node resources/scripts/tamhelper.js bump-recurrence-input` by hand); a new major version is left to
+a person, since it can change how rules are stored. The picker covers every RFC 5545 rule
 part (several times a day, several days or weekdays of the month, and "only the last of those"),
 using recurrence-input's `standard` feature set, which leaves out the raw More options section; editing
 a rule keeps anything it does not show exactly as written.
