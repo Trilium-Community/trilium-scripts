@@ -5,9 +5,9 @@ licensed. Implements RFC 5545 recurrence rules (`RRule`, `RRuleSet`, `rrulestr`,
 verbatim, unminified logic untouched, purely so other addons in this repo don't each need to vendor
 their own copy.
 
-This is a raw vendor dependency, not a BeatLink-authored wrapper — for a friendlier API suited to a
-recurrence-picker UI (converting between an RRULE string and a plain settings object), see
-[librecurrence@beatlink](../librecurrence@beatlink/), which depends on this library.
+This is a raw vendor dependency, not a BeatLink-authored wrapper. For a recurrence picker and rule
+helpers built on it, see [recurrence-input](https://github.com/BeatLink/Recurrence-Widget), which
+agenda-task@beatlink loads from a commit-pinned URL.
 
 ## Usage
 
@@ -19,3 +19,6 @@ against it elsewhere keep working unchanged:
 const libRRule = require("rrule.min.js")
 const rule = new libRRule.RRule({ freq: libRRule.RRule.WEEKLY, byweekday: [libRRule.RRule.MO] })
 ```
+
+recurrence-input imports this library as `rrule`, so under that module the note is titled `rrule`
+instead, as in agenda-task@beatlink's manifest.
