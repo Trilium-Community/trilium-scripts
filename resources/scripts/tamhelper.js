@@ -581,7 +581,7 @@ function checkScriptEnv({ notes, resourceNoteIds, manifestFile, error, warn }) {
 }
 
 
-// plain .js notes are never transpiled -- ES export/import will throw.
+// plain .js notes are never transpiled -- ES export/import will throw; a .js file stored as a text/jsx note is transpiled.
 // Resource notes are exempt for the same reason they skip the env check:
 // they are served raw over HTTP and never require()'d, so an ESM bundle
 // loaded with a dynamic import() is correct rather than broken.
@@ -589,7 +589,7 @@ async function checkEsModuleSyntax({ notes, resourceNoteIds, manifestFile, warn 
     for (const note of notes) {
         const nid = note.id || note.title || "?";
         const sourceUrl = note.sourceUrl || "";
-        if (sourceUrl.endsWith(".js") && !resourceNoteIds.has(nid)) {
+        if (sourceUrl.endsWith(".js") && note.mime !== "text/jsx" && !resourceNoteIds.has(nid)) {
             try {
                 const src = (await readSource(sourceUrl, manifestFile)).toString("utf8");
                 if (EXPORT_RE.test(src)) {
