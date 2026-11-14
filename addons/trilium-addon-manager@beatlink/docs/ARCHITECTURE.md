@@ -139,8 +139,10 @@ Many addons vendor the same library files. Installed naively, one settings libra
 of identical notes, and every fix to it syncs dozens of times. So each resolved note also carries
 `#TAMSOURCEURL`: the URL its content came from, as a second, content-based identity. During
 resolution, a note that does not yet exist under *this* addon's `#TAMFILEID`, but whose source URL
-already exists on some other addon's note, is **cloned into place rather than copied**. Two addons
-vendoring one file share one live note.
+and mime already exist on some other addon's note, is **cloned into place rather than copied**. Two
+addons vendoring one file with the same mime share one live note. The mime is part of the match
+because Trilium only bundles a child script whose env matches its parent's: one addon may vendor a
+library as a frontend module and another as a backend module, and each needs its own note.
 
 The recorded value is the published `sourceId` (the file's branch-tracking URL), not the
 commit-pinned `sourceUrl` it was fetched from, because a pinned URL is a different string on every

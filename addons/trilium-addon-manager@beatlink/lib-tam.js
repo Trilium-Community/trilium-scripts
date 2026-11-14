@@ -436,7 +436,10 @@ async function applyAttributes(actions) {
 // One backend hop answering, for every declared note at once, which are already
 // installed (with the attachment titles they already carry) and which vendored
 // copies this addon may adopt - a note already carrying one of their
-// #TAMSOURCEURL identities and belonging to a *different* addon. Knowing all of
+// #TAMSOURCEURL identities and mimes and belonging to a *different* addon. The
+// mime has to match because one file can be vendored as a frontend module by one
+// addon and a backend module by another, and Trilium only bundles a child whose
+// script env matches its parent's. Knowing all of
 // it up front is what lets the frontend decide which bodies to fetch, leaving
 // the write below with nothing to look up.
 //
@@ -449,9 +452,11 @@ async function applyAttributes(actions) {
 // repaired by re-syncing.
 async function readNoteResolution(addonId, noteDefs) {
     if (noteDefs.length === 0) return { existing: {}, adoptable: {}, attachmentTitles: {} }
-    const identities = [...new Set(noteDefs.map(sourceIdentityOf).filter(Boolean))]
+    const shareable = noteDefs
+        .filter(n => sourceIdentityOf(n))
+        .map(n => ({ localId: n.id, identity: sourceIdentityOf(n), mime: n.mime ?? "text/html" }))
     const attachmentIds = noteDefs.filter(n => (n.attachments || []).length).map(n => n.id)
-    return await api.runOnBackend((tamFileIdLabel, sourceUrlLabel, addonId, localIds, identities, attachmentIds) => {
+    return await api.runOnBackend((tamFileIdLabel, sourceUrlLabel, addonId, localIds, shareable, attachmentIds) => {
         const attachmentIdSet = new Set(attachmentIds)
         const existing = {}
         const attachmentTitles = {}
@@ -462,15 +467,14 @@ async function readNoteResolution(addonId, noteDefs) {
             if (attachmentIdSet.has(localId)) attachmentTitles[localId] = note.getAttachments().map(att => att.title)
         }
         const adoptable = {}
-        for (const identity of identities) {
-            const shared = api.getNoteWithLabel(sourceUrlLabel, identity)
-            if (!shared || shared.isDeleted) continue
-            const owner = shared.getOwnedLabelValue(tamFileIdLabel) || ""
-            if (owner.startsWith(`${addonId}/`)) continue
-            adoptable[identity] = shared.noteId
+        for (const { localId, identity, mime } of shareable) {
+            const shared = api.getNotesWithLabel(sourceUrlLabel, identity).find(note => !note.isDeleted
+                && note.mime === mime
+                && !(note.getOwnedLabelValue(tamFileIdLabel) || "").startsWith(`${addonId}/`))
+            if (shared) adoptable[localId] = shared.noteId
         }
         return { existing, adoptable, attachmentTitles }
-    }, [tamFileIdLabel, sourceUrlLabel, addonId, noteDefs.map(n => n.id), identities, attachmentIds])
+    }, [tamFileIdLabel, sourceUrlLabel, addonId, noteDefs.map(n => n.id), shareable, attachmentIds])
 }
 
 // What a note's declared attachments should look like after this sync, and which
@@ -718,7 +722,7 @@ async function resolveNotes(m, addonId, anchors, options = {}) {
             promptOnUpdate: !!plan.noteDef.promptOnUpdate,
             skipParenting: plan.isEntry && rootExternallyParented,
             sourceIdentity: plan.sourceIdentity,
-            adoptableNoteId: (plan.sourceIdentity && live.adoptable[plan.sourceIdentity]) || null,
+            adoptableNoteId: live.adoptable[plan.localId] || null,
             attachments: plan.pending,
             staleAttachments: plan.stale
         })
@@ -1962,7 +1966,7 @@ async function auditAddon(addonId, addon, catalogSources, rows) {
     const { adoptable } = await readNoteResolution(addonId, notes)
     const live = await readLiveAddon(
         addonId,
-        notes.map(noteDef => ({ id: noteDef.id, adoptableNoteId: adoptable[sourceIdentityOf(noteDef)] || null })),
+        notes.map(noteDef => ({ id: noteDef.id, adoptableNoteId: adoptable[noteDef.id] || null })),
         contentIds
     )
 
