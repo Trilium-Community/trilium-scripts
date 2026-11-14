@@ -6,8 +6,7 @@ verbatim, unminified logic untouched, purely so other addons in this repo don't 
 their own copy.
 
 This is a raw vendor dependency, not a BeatLink-authored wrapper. For a recurrence picker and rule
-helpers built on it, see [recurrence-input](https://github.com/BeatLink/Recurrence-Widget), which
-agenda-task@beatlink loads from a commit-pinned URL.
+helpers built on it, see recurrence-input, which agenda-task@beatlink keeps a copy of.
 
 ## Usage
 
