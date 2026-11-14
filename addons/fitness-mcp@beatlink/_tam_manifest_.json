@@ -1,0 +1,100 @@
+{
+    "id": "fitness-mcp@beatlink",
+    "name": "Fitness MCP",
+    "description": "An MCP server for the diet-manager, workout-manager and body-metrics addons, so an AI agent can read and edit your diet diary, foods and recipes, workout log and programs, and body measurements. It runs as a backend custom request handler at /custom/fitness-mcp (Streamable HTTP, stateless), finds each installed addon's database on its own, and writes through the same data model the widgets use. It needs backend scripting enabled and has no authentication, so only expose it on a network you trust.",
+    "author": "BeatLink",
+    "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/fitness-mcp@beatlink",
+    "license": "GPL-3.0-or-later",
+    "latestVersion": "1.0.0",
+    "type": "script",
+    "readme": "README.md",
+    "changelog": "CHANGELOG.md",
+    "manifestSourceUrl": "https://trilium-community.github.io/trilium-scripts/fitness-mcp@beatlink/_tam_manifest_.json",
+    "manifest": {
+        "notes": [
+            {
+                "id": "script",
+                "title": "fitness-mcp@beatlink",
+                "type": "code",
+                "mime": "application/javascript;env=backend",
+                "sourceUrl": "fitnessMcp.js"
+            },
+            {
+                "id": "diet-lib",
+                "title": "libDietManager.js",
+                "type": "code",
+                "mime": "application/javascript;env=backend",
+                "sourceUrl": "../diet-manager@beatlink/libDietManager.js"
+            },
+            {
+                "id": "workout-lib",
+                "title": "libWorkoutManager.js",
+                "type": "code",
+                "mime": "application/javascript;env=backend",
+                "sourceUrl": "../workout-manager@beatlink/libWorkoutManager.js"
+            },
+            {
+                "id": "body-lib",
+                "title": "libBodyMetrics.js",
+                "type": "code",
+                "mime": "application/javascript;env=backend",
+                "sourceUrl": "../body-metrics@beatlink/libBodyMetrics.js"
+            },
+            {
+                "id": "libsettings-backend",
+                "title": "libSettings.js",
+                "type": "code",
+                "mime": "application/javascript;env=backend",
+                "sourceUrl": "../../libs/libsettings/libsettings-backend.js"
+            },
+            {
+                "id": "readme",
+                "title": "README.md",
+                "type": "code",
+                "mime": "text/markdown",
+                "sourceUrl": "README.md",
+                "renderAsHTML": true
+            }
+        ],
+        "children": [
+            {
+                "parent": "root",
+                "child": "script"
+            },
+            {
+                "parent": "script",
+                "child": "diet-lib"
+            },
+            {
+                "parent": "script",
+                "child": "workout-lib"
+            },
+            {
+                "parent": "script",
+                "child": "body-lib"
+            },
+            {
+                "parent": "script",
+                "child": "libsettings-backend"
+            },
+            {
+                "parent": "script",
+                "child": "readme"
+            }
+        ],
+        "relations": [],
+        "labels": [
+            {
+                "note": "script",
+                "name": "customRequestHandler",
+                "value": "fitness-mcp"
+            },
+            {
+                "note": "script",
+                "name": "iconClass",
+                "value": "bx bx-dumbbell"
+            }
+        ],
+        "readmeNote": "readme"
+    }
+}
