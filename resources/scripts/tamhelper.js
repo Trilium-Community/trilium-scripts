@@ -2121,8 +2121,8 @@ function extractZip(zipPath, destDir) {
  * on a branch name would mean TAM never reported one.
  */
 
-const HALON_REPO = "BeatLink/Halon";
-const HALON_FILE = "trilium/halon.css";
+const HALON_REPO = "x-tech-laboratories/X-Themes";
+const HALON_FILE = "halon/trilium/halon.css";
 const HALON_MANIFEST = "addons/halon@beatlink/_tam_manifest_.json";
 const HALON_URL_RE = new RegExp(`^https://raw\\.githubusercontent\\.com/${HALON_REPO}/([0-9a-f]{40})/${HALON_FILE}$`);
 

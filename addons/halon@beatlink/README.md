@@ -26,7 +26,7 @@ The stylesheet note carries the two labels the theme needs, so there is nothing 
 ## Where the stylesheet comes from
 
 This addon does not keep its own copy of the CSS. Its stylesheet note points straight at
-`trilium/halon.css` in the [Halon repository](https://github.com/BeatLink/Halon), pinned to a
+`halon/trilium/halon.css` in the [X-Themes repository](https://github.com/x-tech-laboratories/X-Themes), pinned to a
 commit, so the theme here and the theme everywhere else cannot drift apart. The design guide, the
 token set and the contrast audit all live there.
 

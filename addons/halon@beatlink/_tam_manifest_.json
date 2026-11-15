@@ -5,7 +5,7 @@
     "author": "BeatLink",
     "homepage": "https://github.com/Trilium-Community/trilium-scripts/tree/main/addons/halon@beatlink",
     "license": "GPL-3.0-or-later",
-    "latestVersion": "0.2.0",
+    "latestVersion": "0.2.1",
     "type": "theme",
     "readme": "README.md",
     "changelog": "CHANGELOG.md",
@@ -17,7 +17,7 @@
                 "title": "halon.css",
                 "type": "code",
                 "mime": "text/css",
-                "sourceUrl": "https://raw.githubusercontent.com/BeatLink/Halon/80cce07f2b9b262b4a0de41129e595677ddc4497/trilium/halon.css"
+                "sourceUrl": "https://raw.githubusercontent.com/x-tech-laboratories/X-Themes/98b8bea0d5a5fadf2a814f7b31b73d0bc89baf25/halon/trilium/halon.css"
             },
             {
                 "id": "readme",
